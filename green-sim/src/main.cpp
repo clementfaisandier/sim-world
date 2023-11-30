@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <spherical-tensor.cpp>
 
 // Error callback functions
 static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -153,6 +154,11 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
+
+    // GETTING BUFFERS
+
+    /*
+    
     float positions[] = { // vertices of a square/rectangle
         -0.5f, -0.5f,
         0.5f, -0.5f,
@@ -164,6 +170,15 @@ int main(void)
         0, 1, 2, // first triangle
         2, 3, 0 // second triangle
     };
+    
+    */
+
+    SphericalTensor earth_tensor = SphericalTensor(1);
+
+    float* positions = earth_tensor.GetVertexBuffer();
+    unsigned int* indices = earth_tensor.GetIndexBuffer();
+
+    
 
     // create VAO
     unsigned int vao;
@@ -196,8 +211,9 @@ int main(void)
     unsigned int vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
     unsigned int fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
-    free(vertexShaderSource);
-    free(fragmentShaderSource);
+    //free(vertexShaderSource);
+    //free(fragmentShaderSource);
+    earth_tensor.~SphericalTensor();
 
     // attach shaders
     unsigned int program = CreateProgram(vertexShader, fragmentShader);

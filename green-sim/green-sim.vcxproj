@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\spherical-tensor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\fragment-shader.shader" />
