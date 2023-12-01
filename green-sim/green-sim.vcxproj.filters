@@ -26,4 +26,9 @@
     <None Include="res\shaders\fragment-shader.shader" />
     <None Include="res\shaders\vertex-shader.shader" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\spherical-tensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

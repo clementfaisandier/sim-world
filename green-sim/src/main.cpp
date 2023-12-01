@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <spherical-tensor.cpp>
+#include "spherical-tensor.h"
 
 // Error callback functions
 static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -33,11 +33,11 @@ static char* ParseShader(const char* filepath)
 
     if (error_no != 0 || file == 0) {
         printf("Error whilst reading file: ERRNO #%d", error_no);
-        exit;
+        exit(error_no);
     }
 
     fseek(file, 0, SEEK_END); // I believe this sets the file pointer to the end of the file
-    int size = ftell(file); // and this figures out the size of the file using that new poiunter given the file data
+    long size = ftell(file); // and this figures out the size of the file using that new poiunter given the file data
 
     char* fileAsString = (char*)malloc(size + 1);
 
@@ -173,7 +173,7 @@ int main(void)
     
     */
 
-    SphericalTensor earth_tensor = SphericalTensor(1);
+    SphericalTensor earth_tensor = SphericalTensor(5,5);
 
     float* positions = earth_tensor.GetVertexBuffer();
     unsigned int* indices = earth_tensor.GetIndexBuffer();

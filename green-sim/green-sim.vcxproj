@@ -26,6 +26,9 @@
     <None Include="res\shaders\fragment-shader.shader" />
     <None Include="res\shaders\vertex-shader.shader" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\spherical-tensor.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
