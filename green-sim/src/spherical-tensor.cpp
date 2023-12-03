@@ -26,11 +26,11 @@ void SphericalTensor::DefineBuffers() {
 
 	// allocation
 
-	int vertex_count = lon_res * (lat_res - 1) + 2; // num vertex
-	int triangle_count = lon_res * (lat_res - 1) * 2; // num indices (num squares  -(*2)> num triangles -(*3)> num indices)
+	vertex_buffer_count = lon_res * (lat_res - 1) + 2; // num vertex
+	index_buffer_count = lon_res * (lat_res - 1) * 2; // num indices (num squares  -(*2)> num triangles -(*3)> num indices)
 
-	vertex_buffer_size = vertex_count * sizeof(*vertex_buffer) * 3; // xyz so 3
-	index_buffer_size = triangle_count * sizeof(*index_buffer) * 3; // 3 verteces per triangle
+	vertex_buffer_size = vertex_buffer_count * sizeof(*vertex_buffer) * 3; // xyz so 3
+	index_buffer_size = index_buffer_count * sizeof(*index_buffer) * 3; // 3 verteces per triangle
 
 	vertex_buffer = (float*)malloc(vertex_buffer_size);
 	index_buffer = (unsigned int*)malloc(index_buffer_size);
@@ -44,7 +44,7 @@ void SphericalTensor::DefineBuffers() {
 		exit(errno);
 	}
 
-	if (DEBUG) printf("vertex_count: %d, triangle_count: %d\nvertex_buffer_size: %u, index_buffer_size: %u\n", vertex_count, triangle_count, vertex_buffer_size, index_buffer_size);
+	if (DEBUG) printf("vertex_count: %d, triangle_count: %d\nvertex_buffer_size: %u, index_buffer_size: %u\n", vertex_buffer_count, index_buffer_count, vertex_buffer_size, index_buffer_size);
 
 	// vertex assignment
 
@@ -238,3 +238,20 @@ float* SphericalTensor::GetVertexBuffer() {
 unsigned int* SphericalTensor::GetIndexBuffer() {
 	return index_buffer;
 }
+
+unsigned int SphericalTensor :: GetVertexBufferCount() {
+	return vertex_buffer_count;
+}
+
+unsigned int SphericalTensor :: GetIndexBufferCount() {
+	return index_buffer_count;
+}
+
+unsigned int SphericalTensor::GetVertexBufferSize() {
+	return vertex_buffer_size;
+}
+
+unsigned int SphericalTensor::GetIndexBufferSize() {
+	return index_buffer_size;
+}
+

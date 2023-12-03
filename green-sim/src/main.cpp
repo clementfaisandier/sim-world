@@ -128,8 +128,8 @@ int main(void)
 
     glfwSetErrorCallback(GLFWErrorCallback);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create a windowed mode window and its OpenGL context
@@ -173,12 +173,16 @@ int main(void)
     
     */
 
-    SphericalTensor earth_tensor = SphericalTensor(5,5);
+
+
+    SphericalTensor earth_tensor = SphericalTensor(4,4);
 
     float* positions = earth_tensor.GetVertexBuffer();
     unsigned int* indices = earth_tensor.GetIndexBuffer();
 
-    
+    unsigned int index_count = earth_tensor.GetIndexBufferCount();
+
+    printf("%d, %d, %d, %d\n", earth_tensor.GetVertexBufferCount(), earth_tensor.GetVertexBufferSize(), earth_tensor.GetIndexBufferCount(), earth_tensor.GetIndexBufferSize());
 
     // create VAO
     unsigned int vao;
@@ -189,16 +193,16 @@ int main(void)
     unsigned int vertexBuffer; // buffer id
     glGenBuffers(1, &vertexBuffer); // generate the actual buffer in memory
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer); // tell opengl how to handle stride and how to navigate data
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
+    glBufferData(GL_ARRAY_BUFFER, earth_tensor.GetVertexBufferSize(), positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
 
     glEnableVertexAttribArray(0); // enable position attributes of our vertices
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0); // tell opengl how to read this attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0); // tell opengl how to read this attribute
 
     // index buffer
     unsigned int indexBuffer;
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); // because this is an index buffer we must bind it differently
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // same when adding data
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, earth_tensor.GetIndexBufferSize(), indices, GL_STATIC_DRAW); // same when adding data
 
 
     // creating shaders
@@ -238,11 +242,10 @@ int main(void)
     {
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
 
         red += red_shift;
-        green += green_shift;
+        green += green_shift;   
         blue += blue_shift;
 
         if (red > 1.0f || red < 0.0f)

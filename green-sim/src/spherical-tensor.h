@@ -8,6 +8,9 @@ private:
 	float* vertex_buffer;
 	unsigned int* index_buffer;
 
+	unsigned int vertex_buffer_count;
+	unsigned int index_buffer_count;
+
 	unsigned int vertex_buffer_size;
 	unsigned int index_buffer_size;
 
@@ -30,4 +33,10 @@ public:
 
 	float* GetVertexBuffer();
 	unsigned int* GetIndexBuffer();
+
+	unsigned int GetVertexBufferCount();
+	unsigned int GetIndexBufferCount();
+
+	unsigned int GetVertexBufferSize();
+	unsigned int GetIndexBufferSize();
 };
