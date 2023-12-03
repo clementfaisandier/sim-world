@@ -5,6 +5,7 @@
 
 #define PI 3.14159265
 #define D_TO_RAD 0.01745329251
+#define DEBUG false
 
 #include "spherical-tensor.h"
 
@@ -43,11 +44,12 @@ void SphericalTensor::DefineBuffers() {
 		exit(errno);
 	}
 
-	printf("vertex_count: %d, triangle_count: %d\nvertex_buffer_size: %u, index_buffer_size: %u\n", vertex_count, triangle_count, vertex_buffer_size, index_buffer_size);
+	if (DEBUG) printf("vertex_count: %d, triangle_count: %d\nvertex_buffer_size: %u, index_buffer_size: %u\n", vertex_count, triangle_count, vertex_buffer_size, index_buffer_size);
 
 	// vertex assignment
 
 	AssignVertices();
+	printf("\n");
 	AssignIndices();
 
 	// indice assignment
@@ -119,12 +121,14 @@ void SphericalTensor::AssignVertices() {
 
 	float lat_start = PI / 2;
 
-	printf("limits: %f %f\n", lon_limit, lat_limit);
+	if (DEBUG) printf("limits: %f %f\n", lon_limit, lat_limit);
 
 	// north pole
 	vertex_buffer[vertex_i++] = 0.0; // x
 	vertex_buffer[vertex_i++] = 0.0; // y
 	vertex_buffer[vertex_i++] = 1.0; // z
+
+	if (DEBUG) ("i: %d, lon: %f, lat: %f, x: %f, y: %f, z: %f\n", (vertex_i / 3) - 1, 0.0, PI/2, vertex_buffer[vertex_i - 3], vertex_buffer[vertex_i - 2], vertex_buffer[vertex_i - 1]);
 
 	for (int lat_i = 1; lat_i < lat_res; lat_i++) { // defines non-pole vertices
 
@@ -138,7 +142,7 @@ void SphericalTensor::AssignVertices() {
 			vertex_buffer[vertex_i++] = cos(lat) * cos(lon); // y
 			vertex_buffer[vertex_i++] = sin(lat); // z
 
-			printf("i: %d, lon: %f, lat: %f, x: %f, y: %f, z: %f\n", (vertex_i / 3) - 1, lon, lat, vertex_buffer[vertex_i - 3], vertex_buffer[vertex_i - 2], vertex_buffer[vertex_i - 1]);
+			if (DEBUG) printf("i: %d, lon: %f, lat: %f, x: %f, y: %f, z: %f\n", (vertex_i / 3) - 1, lon, lat, vertex_buffer[vertex_i - 3], vertex_buffer[vertex_i - 2], vertex_buffer[vertex_i - 1]);
 		}
 	}
 
@@ -146,20 +150,63 @@ void SphericalTensor::AssignVertices() {
 	vertex_buffer[vertex_i++] = 0.0; // x
 	vertex_buffer[vertex_i++] = 0.0; // y
 	vertex_buffer[vertex_i++] = -1.0; // z
+	if (DEBUG) printf("i: %d, lon: %f, lat: %f, x: %f, y: %f, z: %f\n", (vertex_i / 3) - 1, 0.0, -PI / 2, vertex_buffer[vertex_i - 3], vertex_buffer[vertex_i - 2], vertex_buffer[vertex_i - 1]);
+
 }
 
 
 void SphericalTensor::AssignIndices() {
-	
-	// north cap
 
-	// everything in the middle
+	unsigned int buffer_i = 0;
 
+	unsigned int top_vertex_i = 0;
+	unsigned int bot_vertex_i = 1;
 
+	for (int lat_i = 0; lat_i < lat_res; lat_i++) {
 
+		unsigned int initial_top_vertex = top_vertex_i;
+		unsigned int initial_bot_vertex = bot_vertex_i;
 
-	//south cap
+		for (int lon_i = 1; lon_i <= lon_res; lon_i++) {
 
+			if (lat_i == 0) {
+				index_buffer[buffer_i++] = top_vertex_i;
+				index_buffer[buffer_i++] = bot_vertex_i++;
+				index_buffer[buffer_i++] = lon_i == lon_res ? initial_bot_vertex : bot_vertex_i;
+
+				if (lon_i == lon_res)
+					top_vertex_i++;
+
+				if (DEBUG) printf("i: %d, a: %d, b: %d, c: %d\n", (buffer_i / 3) - 1, index_buffer[buffer_i - 3], index_buffer[buffer_i - 2], index_buffer[buffer_i - 1]);
+
+			}
+			else if (lat_i != lat_res - 1) {
+
+				unsigned int top_left = top_vertex_i++;
+				unsigned int top_right = lon_i == lon_res ? initial_top_vertex : top_vertex_i; // this longitude trick takes care of wrapping
+				unsigned int bot_left = bot_vertex_i++;
+				unsigned int bot_right = lon_i == lon_res ? initial_bot_vertex : bot_vertex_i;
+
+				index_buffer[buffer_i++] = top_left;
+				index_buffer[buffer_i++] = bot_left;
+				index_buffer[buffer_i++] = bot_right;
+
+				index_buffer[buffer_i++] = top_right;
+				index_buffer[buffer_i++] = bot_left;
+				index_buffer[buffer_i++] = bot_right;
+
+				if (DEBUG) printf("i: %d, a: %d, b: %d, c: %d, d: %d\n", (buffer_i / 3) - 2, top_left, top_right, bot_left, bot_right);
+
+			}
+			else {
+				index_buffer[buffer_i++] = bot_vertex_i;
+				index_buffer[buffer_i++] = top_vertex_i++;
+				index_buffer[buffer_i++] = lon_i == lon_res ? initial_top_vertex : top_vertex_i;
+				
+				if (DEBUG) printf("i: %d, a: %d, b: %d, c: %d\n", (buffer_i / 3) - 1, index_buffer[buffer_i - 3], index_buffer[buffer_i - 2], index_buffer[buffer_i - 1]);
+			}
+		}
+	}
 }
 
 
