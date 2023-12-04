@@ -150,6 +150,8 @@ int main(void)
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(GLErrorCallback, 0);
 
+    //glEnable(GL_DEPTH_TEST);
+
     glfwSwapInterval(1);
 
     std::cout << glGetString(GL_VERSION) << std::endl;
@@ -157,32 +159,50 @@ int main(void)
 
     // GETTING BUFFERS
 
-    /*
     
-    float positions[] = { // vertices of a square/rectangle
-        -0.5f, -0.5f,
-        0.5f, -0.5f,
-        0.5f, 0.5f,
-       -0.5f, 0.5f
+    
+    float positionss[] = { // vertices of a square/rectangle
+        0.0, 0.0, 1.0,
+        0.0, 1.0, -0.0,
+        0.866025, -0.5, -0.0,
+        -0.866025, -0.5, -0.0,
+        0.0, 0.0, -1
     };
 
-    unsigned int indices[] = { // index buffer
-        0, 1, 2, // first triangle
-        2, 3, 0 // second triangle
+    unsigned int indicess[] = { // index buffer
+        0, 1, 2,
+        0, 2, 3,
+
+        0, 3, 1,
+//        0, 1, 3,
+ //       3, 0, 1,
+ //       1, 3, 0,
+//        3, 1, 0,
+ //       1, 0, 3,
+
+        4, 1, 2,
+        4, 2, 3,
+       4, 3, 1
     };
     
-    */
+    
 
 
-
-    SphericalTensor earth_tensor = SphericalTensor(4,4);
+    
+    SphericalTensor earth_tensor = SphericalTensor(3,2);
 
     float* positions = earth_tensor.GetVertexBuffer();
     unsigned int* indices = earth_tensor.GetIndexBuffer();
 
     unsigned int index_count = earth_tensor.GetIndexBufferCount();
 
-    printf("%d, %d, %d, %d\n", earth_tensor.GetVertexBufferCount(), earth_tensor.GetVertexBufferSize(), earth_tensor.GetIndexBufferCount(), earth_tensor.GetIndexBufferSize());
+
+    if (DEBUG) earth_tensor.PrintDrawOrder();
+
+    for (int i = 0; i < sizeof(indicess) / sizeof(*indicess); i++) {
+        printf("%d, %d, %d\n", i, indicess[i], indices[i]);
+    }
+    
 
     // create VAO
     unsigned int vao;
@@ -194,6 +214,8 @@ int main(void)
     glGenBuffers(1, &vertexBuffer); // generate the actual buffer in memory
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer); // tell opengl how to handle stride and how to navigate data
     glBufferData(GL_ARRAY_BUFFER, earth_tensor.GetVertexBufferSize(), positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
+
 
     glEnableVertexAttribArray(0); // enable position attributes of our vertices
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0); // tell opengl how to read this attribute
@@ -203,21 +225,23 @@ int main(void)
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); // because this is an index buffer we must bind it differently
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, earth_tensor.GetIndexBufferSize(), indices, GL_STATIC_DRAW); // same when adding data
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // same when adding data
+
 
 
     // creating shaders
 
     // get source code
-    char* vertexShaderSource = ParseShader("res/shaders/vertex-shader.shader");
-    char* fragmentShaderSource = ParseShader("res/shaders/fragment-shader.shader");
+    char* vertexShaderSource = ParseShader("res/shaders/vertex-shader.vert");
+    char* fragmentShaderSource = ParseShader("res/shaders/fragment-shader.frag");
 
     // compile shaders
     unsigned int vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
     unsigned int fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
-    //free(vertexShaderSource);
-    //free(fragmentShaderSource);
-    earth_tensor.~SphericalTensor();
+    free(vertexShaderSource);
+    free(fragmentShaderSource);
+    //earth_tensor.~SphericalTensor();
 
     // attach shaders
     unsigned int program = CreateProgram(vertexShader, fragmentShader);
@@ -243,6 +267,7 @@ int main(void)
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
+        //glDrawElements(GL_TRIANGLES, sizeof(indices)/4, GL_UNSIGNED_INT, nullptr);
 
         red += red_shift;
         green += green_shift;   

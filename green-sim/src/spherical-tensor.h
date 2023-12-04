@@ -1,5 +1,6 @@
 #pragma once
 
+#define DEBUG true
 
 
 class SphericalTensor {
@@ -39,4 +40,6 @@ public:
 
 	unsigned int GetVertexBufferSize();
 	unsigned int GetIndexBufferSize();
+
+	void PrintDrawOrder();
 };

@@ -23,8 +23,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shaders\fragment-shader.shader" />
-    <None Include="res\shaders\vertex-shader.shader" />
+    <None Include="res\shaders\fragment-shader.frag" />
+    <None Include="res\shaders\vertex-shader.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\spherical-tensor.h">

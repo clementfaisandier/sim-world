@@ -5,7 +5,6 @@
 
 #define PI 3.14159265
 #define D_TO_RAD 0.01745329251
-#define DEBUG false
 
 #include "spherical-tensor.h"
 
@@ -49,64 +48,7 @@ void SphericalTensor::DefineBuffers() {
 	// vertex assignment
 
 	AssignVertices();
-	printf("\n");
 	AssignIndices();
-
-	// indice assignment
-
-	// north pole cap
-
-	int indice_i = 0;
-
-	for (int i = 1; i < lon_res;) {
-		index_buffer[indice_i++] = 0;
-		index_buffer[indice_i++] = i;
-		index_buffer[indice_i++] = ++i;
-	}
-	index_buffer[indice_i++] = 0;
-	index_buffer[indice_i++] = 1;
-	index_buffer[indice_i++] = lon_res;
-
-	// mid strips
-
-	// go through strips
-	for (int lat_i = 0; lat_i < lat_res - 3; lat_i++) {
-
-		int top_i = (lat_i * lon_res) + 1;
-		int bot_i = top_i + lon_res;
-
-		// doing the squares on each strips into triangles
-		for (int i = 0; i < lon_res; i++) {
-			index_buffer[indice_i++] = top_i;
-			index_buffer[indice_i++] = bot_i;
-			index_buffer[indice_i++] = ++bot_i;
-
-			index_buffer[indice_i++] = bot_i;
-			index_buffer[indice_i++] = top_i;
-			index_buffer[indice_i++] = ++top_i;
-		}
-
-		index_buffer[indice_i++] = top_i;
-		index_buffer[indice_i++] = bot_i;
-		bot_i = bot_i - lat_res + 1;
-		index_buffer[indice_i++] = bot_i; // original bot_i
-
-		index_buffer[indice_i++] = bot_i;
-		index_buffer[indice_i++] = top_i;
-		index_buffer[indice_i++] = top_i - lat_res + 1;
-	}
-
-	int south_pole = (lon_res * (lat_res - 1)) + 1;
-
-	// south pole cap
-	for (int i = south_pole - lon_res; i < south_pole - 1;) {
-		index_buffer[indice_i++] = south_pole;
-		index_buffer[indice_i++] = i;
-		index_buffer[indice_i++] = ++i;
-	}
-	index_buffer[indice_i++] = south_pole;
-	index_buffer[indice_i++] = south_pole - lon_res;
-	index_buffer[indice_i++] = south_pole - 1;
 }
 
 void SphericalTensor::AssignVertices() {
@@ -128,8 +70,7 @@ void SphericalTensor::AssignVertices() {
 	vertex_buffer[vertex_i++] = 0.0; // y
 	vertex_buffer[vertex_i++] = 1.0; // z
 
-	if (DEBUG) ("i: %d, lon: %f, lat: %f, x: %f, y: %f, z: %f\n", (vertex_i / 3) - 1, 0.0, PI/2, vertex_buffer[vertex_i - 3], vertex_buffer[vertex_i - 2], vertex_buffer[vertex_i - 1]);
-
+	if (DEBUG) printf("i: %d, lon: %f, lat: %f, x: %f, y: %f, z: %f\n", (vertex_i / 3) - 1, 0.0, PI/2, vertex_buffer[vertex_i - 3], vertex_buffer[vertex_i - 2], vertex_buffer[vertex_i - 1]);
 	for (int lat_i = 1; lat_i < lat_res; lat_i++) { // defines non-pole vertices
 
 		float lat = (PI / 2) - (lat_separation * lat_i);
@@ -191,9 +132,9 @@ void SphericalTensor::AssignIndices() {
 				index_buffer[buffer_i++] = bot_left;
 				index_buffer[buffer_i++] = bot_right;
 
-				index_buffer[buffer_i++] = top_right;
-				index_buffer[buffer_i++] = bot_left;
+				index_buffer[buffer_i++] = top_left;
 				index_buffer[buffer_i++] = bot_right;
+				index_buffer[buffer_i++] = top_right;
 
 				if (DEBUG) printf("i: %d, a: %d, b: %d, c: %d, d: %d\n", (buffer_i / 3) - 2, top_left, top_right, bot_left, bot_right);
 
@@ -255,3 +196,24 @@ unsigned int SphericalTensor::GetIndexBufferSize() {
 	return index_buffer_size;
 }
 
+void SphericalTensor::PrintDrawOrder() {
+
+	printf("vertex_count: %d, triangle_count: %d\nvertex_buffer_size: %u, index_buffer_size: %u\n", vertex_buffer_count, index_buffer_count, vertex_buffer_size, index_buffer_size);
+
+
+
+	for (int index_i = 0; index_i < index_buffer_count; index_i++) {
+		printf("\ndraw: %d\n", index_i);
+		for (int rel_vertex_i = 0; rel_vertex_i < 3; rel_vertex_i++) {
+			unsigned int final_vertex_index = index_buffer[(index_i * 3) + rel_vertex_i];
+
+			printf("\tvertex: %d:\t", final_vertex_index);
+
+			for (int j = 0; j < 3; j++) {
+				printf("%d: %f ", j, vertex_buffer[final_vertex_index + j]);
+			}
+
+
+		}
+	}
+}
