@@ -2,7 +2,7 @@
 
 #include "spherical-tensor.h"
 
-TEST(SphericalTensorTest, Handles3_3) {
+TEST(SphericalTensorTest, Handles3_2) {
 
     float positions[] = { // vertices of a square/rectangle
         0.0, 0.0, 1.0,
@@ -21,8 +21,25 @@ TEST(SphericalTensorTest, Handles3_3) {
         4, 3, 1
     };
 
-    SphericalTensor tensor = SphericalTensor(3, 3);
+    SphericalTensor tensor = SphericalTensor(3, 2);
 
-    ASSERT_EQ(tensor.GetVertexBuffer(), positions) << "SphericalTensor vertex buffer incorrect for (3, 3).";
-    ASSERT_EQ(tensor.GetIndexBuffer(), indices) << "SphericalTensor index buffer incorrect for (3, 3).";
+    float* pos = tensor.GetVertexBuffer();
+    unsigned int* ind = tensor.GetIndexBuffer();
+
+    unsigned int pos_count = 5;
+    unsigned int ind_count = 6;
+
+    for (int i = 0; i < pos_count; i++) {
+        for (int j = 0; j < 3; j++) {
+            unsigned int index = (i * 3) + j;
+            EXPECT_EQ(pos[index], positions [index]);
+        }
+    }
+
+    for (int i = 0; i < ind_count; i++) {
+        for (int j = 0; j < 3; j++) {
+            unsigned int index = (i * 3) + j;
+            EXPECT_EQ(ind[index], indices[index]);
+        }
+    }
 }

@@ -199,6 +199,9 @@ int main(void)
 
     if (DEBUG) earth_tensor.PrintDrawOrder();
 
+    positions = positionss;
+    indices = indicess;
+
     for (int i = 0; i < sizeof(indicess) / sizeof(*indicess); i++) {
         printf("%d, %d, %d\n", i, indicess[i], indices[i]);
     }
@@ -266,7 +269,7 @@ int main(void)
     {
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
-        glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, index_count*3, GL_UNSIGNED_INT, nullptr);
         //glDrawElements(GL_TRIANGLES, sizeof(indices)/4, GL_UNSIGNED_INT, nullptr);
 
         red += red_shift;
