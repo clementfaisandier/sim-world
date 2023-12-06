@@ -1,9 +1,11 @@
-#include <glew.h>
-#include <glfw3.h>
+#include <GL\glew.h>
+#include <GLFW\glfw3.h>
 
 #include <iostream>
 #include <fstream>
-#include "spherical-tensor.h"
+#include "spherical-mesh.h"
+#include "math.h"
+
 
 // Error callback functions
 static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -150,46 +152,17 @@ int main(void)
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(GLErrorCallback, 0);
 
+    // face culling optimization -> can lead to invisible triangles if the index buffer defines the trianges in a counter-clockwise fashion
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+
     //glEnable(GL_DEPTH_TEST);
 
     glfwSwapInterval(1);
 
     std::cout << glGetString(GL_VERSION) << std::endl;
-
-
-    // GETTING BUFFERS
-
     
-    
-    float positionss[] = { // vertices of a square/rectangle
-        0.0, 0.0, 1.0,
-        0.0, 1.0, -0.0,
-        0.866025, -0.5, -0.0,
-        -0.866025, -0.5, -0.0,
-        0.0, 0.0, -1
-    };
-
-    unsigned int indicess[] = { // index buffer
-        0, 1, 2,
-        0, 2, 3,
-
-        0, 3, 1,
-//        0, 1, 3,
- //       3, 0, 1,
- //       1, 3, 0,
-//        3, 1, 0,
- //       1, 0, 3,
-
-        4, 1, 2,
-        4, 2, 3,
-       4, 3, 1
-    };
-    
-    
-
-
-    
-    SphericalTensor earth_tensor = SphericalTensor(3,2);
+    SphericalMesh earth_tensor = SphericalMesh(360 ,180);
 
     float* positions = earth_tensor.GetVertexBuffer();
     unsigned int* indices = earth_tensor.GetIndexBuffer();
@@ -198,13 +171,6 @@ int main(void)
 
 
     if (DEBUG) earth_tensor.PrintDrawOrder();
-
-    positions = positionss;
-    indices = indicess;
-
-    for (int i = 0; i < sizeof(indicess) / sizeof(*indicess); i++) {
-        printf("%d, %d, %d\n", i, indicess[i], indices[i]);
-    }
     
 
     // create VAO
@@ -252,6 +218,17 @@ int main(void)
     glUseProgram(program);
     // Uniforms
 
+    // matrix
+
+    Matrix4f matrix = Matrix4f(Matrix4f::TRANSLATION_MODE, 0.1, 0.1, 0.1);
+
+    int m_uniform = glGetUniformLocation(program, "translation_matrix");
+
+    glUniformMatrix4fv(m_uniform, 1, GL_TRUE, matrix.matrix);
+
+
+    // color Uniform
+
     float red = 0.0f;
     float red_shift = 0.01f;
     float green = 0.5f;
@@ -262,7 +239,7 @@ int main(void)
     int uniform = glGetUniformLocation(program, "u_color"); // get uniform id from shader
     if (uniform == -1) { std::cout << "Uniform u_color does not exist"; }
 
-    glUniform4f(uniform, red, green, blue, 1.0f); // apply a new value onto uniform
+    glUniform4f(uniform, red, green, blue, 1.0f); // link new uniform
 
     // Loop until the user closes the window 
     while (!glfwWindowShouldClose(window))

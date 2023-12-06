@@ -20,14 +20,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\spherical-tensor.cpp" />
+    <ClCompile Include="src\math.cpp" />
+    <ClCompile Include="src\spherical-mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\fragment-shader.frag" />
     <None Include="res\shaders\vertex-shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\spherical-tensor.h" />
+    <ClInclude Include="src\math.h" />
+    <ClInclude Include="src\spherical-mesh.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -115,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\glew-2.1.0\include\GL\;$(SolutionDir)Dependencies\GLFW\include\GLFW\;$(SolutionDir)green-sim\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\glew-2.1.0\include\;$(SolutionDir)Dependencies\GLFW\include\;$(SolutionDir)Dependencies\glm\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,7 +134,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\glew-2.1.0\include\GL\;$(SolutionDir)Dependencies\GLFW\include\GLFW\;$(SolutionDir)green-sim\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\glew-2.1.0\include\;$(SolutionDir)Dependencies\GLFW\include\;$(SolutionDir)Dependencies\glm\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

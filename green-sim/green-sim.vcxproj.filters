@@ -18,7 +18,10 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\spherical-tensor.cpp">
+    <ClCompile Include="src\spherical-mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -27,7 +30,10 @@
     <None Include="res\shaders\vertex-shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\spherical-tensor.h">
+    <ClInclude Include="src\spherical-mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

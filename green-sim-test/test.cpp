@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include "spherical-tensor.h"
+#include "spherical-mesh.h"
 
-TEST(SphericalTensorTest, Handles3_2) {
+TEST(SphericalMeshTest, Handles3_2) {
 
     float positions[] = { // vertices of a square/rectangle
         0.0, 0.0, 1.0,
@@ -21,10 +21,10 @@ TEST(SphericalTensorTest, Handles3_2) {
         4, 3, 1
     };
 
-    SphericalTensor tensor = SphericalTensor(3, 2);
+    SphericalMesh mesh = SphericalMesh(3, 2);
 
-    float* pos = tensor.GetVertexBuffer();
-    unsigned int* ind = tensor.GetIndexBuffer();
+    float* pos = mesh.GetVertexBuffer();
+    unsigned int* ind = mesh.GetIndexBuffer();
 
     unsigned int pos_count = 5;
     unsigned int ind_count = 6;
