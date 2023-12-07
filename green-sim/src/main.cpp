@@ -226,6 +226,15 @@ int main(void)
 
     //Matrix4f matrix = Matrix4f(Matrix4f::TRANSLATION_MODE, 0.1, 0.1, 0.1);
 
+    // scaling matrix
+
+    float scale = 0.5;
+    float proportional_scale_matrix[16] = {
+                        scale, 0.0, 0.0, 0.1,
+                        0.0, scale, 0.0, 0.1,
+                        0.0, 0.0, scale, 0.1,
+                        0.0, 0.0, 0.0, 1.0
+    };
     
     // translation matrix
     
@@ -244,8 +253,8 @@ int main(void)
     float x_rot = 0;
     float y_rot = 0;
     float z_rot = 0;
-    float x_rot_d = 0;
-    float y_rot_d = PI / 180;
+    float x_rot_d = PI / 180;
+    float y_rot_d = 0;
     float z_rot_d = 0;
 
     float z_rot_matrix[16] = {
@@ -272,11 +281,13 @@ int main(void)
     int x_rot_m_uniform = glGetUniformLocation(program, "x_rot_matrix");
     int y_rot_m_uniform = glGetUniformLocation(program, "y_rot_matrix");
     int z_rot_m_uniform = glGetUniformLocation(program, "z_rot_matrix");
+    int scale_m_uniform = glGetUniformLocation(program, "scale_matrix");
 
     glUniformMatrix4fv(trans_m_uniform, 1, GL_TRUE, trans_matrix);
     glUniformMatrix4fv(x_rot_m_uniform, 1, GL_TRUE, x_rot_matrix);
     glUniformMatrix4fv(y_rot_m_uniform, 1, GL_TRUE, y_rot_matrix);
     glUniformMatrix4fv(z_rot_m_uniform, 1, GL_TRUE, z_rot_matrix);
+    glUniformMatrix4fv(scale_m_uniform, 1, GL_TRUE, proportional_scale_matrix);
 
 
     // color Uniform
