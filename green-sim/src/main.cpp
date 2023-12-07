@@ -6,6 +6,10 @@
 #include "spherical-mesh.h"
 #include "math.h"
 
+#include <cmath>
+#define PI 3.14159265
+#define D_TO_RAD 0.01745329251
+
 
 // Error callback functions
 static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -153,8 +157,8 @@ int main(void)
     glDebugMessageCallback(GLErrorCallback, 0);
 
     // face culling optimization -> can lead to invisible triangles if the index buffer defines the trianges in a counter-clockwise fashion
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW);
+    //glEnable(GL_CULL_FACE);
+    //glFrontFace(GL_CW);
 
     //glEnable(GL_DEPTH_TEST);
 
@@ -162,7 +166,7 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
     
-    SphericalMesh earth_tensor = SphericalMesh(360 ,180);
+    SphericalMesh earth_tensor = SphericalMesh(3 ,2);
 
     float* positions = earth_tensor.GetVertexBuffer();
     unsigned int* indices = earth_tensor.GetIndexBuffer();
@@ -220,11 +224,59 @@ int main(void)
 
     // matrix
 
-    Matrix4f matrix = Matrix4f(Matrix4f::TRANSLATION_MODE, 0.1, 0.1, 0.1);
+    //Matrix4f matrix = Matrix4f(Matrix4f::TRANSLATION_MODE, 0.1, 0.1, 0.1);
 
-    int m_uniform = glGetUniformLocation(program, "translation_matrix");
+    
+    // translation matrix
+    
+    float x_d = 0;
+    float y_d = 0;
+    float z_d = 0;
+    float trans_matrix[16] = {
+                        1.0, 0.0, 0.0, 0.1,
+                        0.0, 1.0, 0.0, 0.1,
+                        0.0, 0.0, 1.0, 0.1,
+                        0.0, 0.0, 0.0, 1.0
+    };
+    
+    // rotational matrix
 
-    glUniformMatrix4fv(m_uniform, 1, GL_TRUE, matrix.matrix);
+    float x_rot = 0;
+    float y_rot = 0;
+    float z_rot = 0;
+    float x_rot_d = 0;
+    float y_rot_d = PI / 180;
+    float z_rot_d = 0;
+
+    float z_rot_matrix[16] = {
+                        cosf(z_rot), -sinf(z_rot), 0.0, 0.0,
+                        sinf(z_rot), cosf(z_rot), 0.0, 0.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        0.0, 0.0, 0.0, 1.0
+    };
+    float y_rot_matrix[16] = {
+                        cosf(y_rot), 0.0, -sinf(y_rot), 0.0,
+                        0.0, 1.0, 0.0, 0.0,
+                        sinf(y_rot), 0.0, cosf(y_rot), 0.0,
+                        0.0, 0.0, 0.0, 1.0
+    };
+    float x_rot_matrix[16] = {
+                       1.0, 0.0, 0.0, 0.0,
+                       0.0, cosf(x_rot), -sinf(x_rot), 0.0,
+                       0.0, sinf(x_rot), cosf(x_rot), 0.0,
+                       0.0, 0.0, 0.0, 1.0
+    };
+    
+
+    int trans_m_uniform = glGetUniformLocation(program, "translation_matrix");
+    int x_rot_m_uniform = glGetUniformLocation(program, "x_rot_matrix");
+    int y_rot_m_uniform = glGetUniformLocation(program, "y_rot_matrix");
+    int z_rot_m_uniform = glGetUniformLocation(program, "z_rot_matrix");
+
+    glUniformMatrix4fv(trans_m_uniform, 1, GL_TRUE, trans_matrix);
+    glUniformMatrix4fv(x_rot_m_uniform, 1, GL_TRUE, x_rot_matrix);
+    glUniformMatrix4fv(y_rot_m_uniform, 1, GL_TRUE, y_rot_matrix);
+    glUniformMatrix4fv(z_rot_m_uniform, 1, GL_TRUE, z_rot_matrix);
 
 
     // color Uniform
@@ -269,7 +321,35 @@ int main(void)
             blue += blue_shift;
         }
 
+        trans_matrix[3] += x_d;
+        trans_matrix[7] += y_d;
+        trans_matrix[11] += z_d;
+
+        z_rot += z_rot_d;
+        y_rot += y_rot_d;
+        x_rot += x_rot_d;
+
+        z_rot_matrix[0] = cosf(z_rot);
+        z_rot_matrix[1] = -sinf(z_rot);
+        z_rot_matrix[4] = sinf(z_rot);
+        z_rot_matrix[5] = cosf(z_rot);
+
+        y_rot_matrix[0] = cosf(y_rot);
+        y_rot_matrix[2] = -sinf(y_rot);
+        y_rot_matrix[8] = sinf(y_rot);
+        y_rot_matrix[10] = cosf(y_rot);
+
+        x_rot_matrix[5] = cosf(x_rot);
+        x_rot_matrix[6] = -sinf(x_rot);
+        x_rot_matrix[9] = sinf(x_rot);
+        x_rot_matrix[10] = cosf(x_rot);
+
         glUniform4f(uniform, red, green, blue, 1.0f);
+        glUniformMatrix4fv(trans_m_uniform, 1, GL_TRUE, trans_matrix);
+        glUniformMatrix4fv(x_rot_m_uniform, 1, GL_TRUE, x_rot_matrix);
+        glUniformMatrix4fv(y_rot_m_uniform, 1, GL_TRUE, y_rot_matrix);
+        glUniformMatrix4fv(z_rot_m_uniform, 1, GL_TRUE, z_rot_matrix);
+
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
