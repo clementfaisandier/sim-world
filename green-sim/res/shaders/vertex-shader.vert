@@ -10,10 +10,14 @@ uniform mat4 scale_matrix;
 
 uniform vec4 u_color;
 
-out vec4 color;
+const vec4 colors[3] = vec4[3] (vec4(1, 0, 0, 1),
+                                vec4(0, 1, 0, 1),
+                                vec4(0, 0, 1, 1));
+
+out vec4 p_color;
 
 void main()
 {
     gl_Position = scale_matrix * translation_matrix * x_rot_matrix * y_rot_matrix * z_rot_matrix *  position;
-    color = u_color;
+    p_color = colors[gl_VertexID];
 }

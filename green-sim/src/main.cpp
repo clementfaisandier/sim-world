@@ -253,8 +253,8 @@ int main(void)
     float x_rot = 0;
     float y_rot = 0;
     float z_rot = 0;
-    float x_rot_d = PI / 180;
-    float y_rot_d = 0;
+    float x_rot_d = 0;
+    float y_rot_d = PI / 180;
     float z_rot_d = 0;
 
     float z_rot_matrix[16] = {
