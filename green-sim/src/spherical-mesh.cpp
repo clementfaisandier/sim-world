@@ -141,8 +141,14 @@ void SphericalMesh::AssignIndices() {
 			}
 			else {
 				index_buffer[buffer_i++] = bot_vertex_i;
+
+				// test if with depth this solution works with face-culling, the other would not work with face-culling
+				//index_buffer[buffer_i++] = lon_i == 1 ? lon_i : bot_vertex_i + 1 - lon_i;
+				//index_buffer[buffer_i++] = bot_vertex_i - lon_i;
+
 				index_buffer[buffer_i++] = top_vertex_i++;
 				index_buffer[buffer_i++] = lon_i == lon_res ? initial_top_vertex : top_vertex_i;
+				
 				
 				if (DEBUG) printf("i: %d, a: %d, b: %d, c: %d\n", (buffer_i / 3) - 1, index_buffer[buffer_i - 3], index_buffer[buffer_i - 2], index_buffer[buffer_i - 1]);
 			}
