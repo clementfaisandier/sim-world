@@ -6,6 +6,9 @@
 #include "spherical-mesh.h"
 #include "math.h"
 
+#include "transformation-module.h"
+
+
 #include <cmath>
 #define PI 3.14159265
 #define D_TO_RAD 0.01745329251
@@ -222,6 +225,46 @@ int main(void)
     glUseProgram(program);
     // Uniforms
 
+    TransformationModule TM = TransformationModule();
+
+    glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
+
+    int transformation_m_uniform = glGetUniformLocation(program, "translation_matrix");
+
+    glUniformMatrix4fv(transformation_m_uniform, 1, GL_TRUE, glm::value_ptr(transformation_matrix));
+
+
+
+    // Loop until the user closes the window 
+    while (!glfwWindowShouldClose(window))
+    {
+        // Render here
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDrawElements(GL_TRIANGLES, index_count*3, GL_UNSIGNED_INT, nullptr);
+        //glDrawElements(GL_TRIANGLES, sizeof(indices)/4, GL_UNSIGNED_INT, nullptr);
+
+        TM.Rotate(glm::vec3(PI / 180, 0, 0));
+
+        glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
+
+        glUniformMatrix4fv(transformation_m_uniform, 1, GL_TRUE, glm::value_ptr(transformation_matrix));
+
+
+        // Swap front and back buffers
+        glfwSwapBuffers(window);
+
+        // Poll for and process events
+        glfwPollEvents();
+    }
+
+    glDeleteProgram(program);
+
+    glfwTerminate();
+    return 0;
+}
+
+
+/*
     // matrix
 
     //Matrix4f matrix = Matrix4f(Matrix4f::TRANSLATION_MODE, 0.1, 0.1, 0.1);
@@ -235,9 +278,9 @@ int main(void)
                         0.0, 0.0, scale, 0.1,
                         0.0, 0.0, 0.0, 1.0
     };
-    
+
     // translation matrix
-    
+
     float x_d = 0;
     float y_d = 0;
     float z_d = 0;
@@ -247,7 +290,7 @@ int main(void)
                         0.0, 0.0, 1.0, 0.1,
                         0.0, 0.0, 0.0, 1.0
     };
-    
+
     // rotational matrix
 
     float x_rot = 0;
@@ -275,7 +318,11 @@ int main(void)
                        0.0, sinf(x_rot), cosf(x_rot), 0.0,
                        0.0, 0.0, 0.0, 1.0
     };
-    
+
+
+
+
+
 
     int trans_m_uniform = glGetUniformLocation(program, "translation_matrix");
     int x_rot_m_uniform = glGetUniformLocation(program, "x_rot_matrix");
@@ -289,48 +336,10 @@ int main(void)
     glUniformMatrix4fv(z_rot_m_uniform, 1, GL_TRUE, z_rot_matrix);
     glUniformMatrix4fv(scale_m_uniform, 1, GL_TRUE, proportional_scale_matrix);
 
+    // IN DISPLAY LOOP:
 
-    // color Uniform
 
-    float red = 0.0f;
-    float red_shift = 0.01f;
-    float green = 0.5f;
-    float green_shift = 0.001f;
-    float blue = 1.0f;
-    float blue_shift = 0.01f;
 
-    int uniform = glGetUniformLocation(program, "u_color"); // get uniform id from shader
-    if (uniform == -1) { std::cout << "Uniform u_color does not exist"; }
-
-    glUniform4f(uniform, red, green, blue, 1.0f); // link new uniform
-
-    // Loop until the user closes the window 
-    while (!glfwWindowShouldClose(window))
-    {
-        // Render here
-        glClear(GL_COLOR_BUFFER_BIT);
-        glDrawElements(GL_TRIANGLES, index_count*3, GL_UNSIGNED_INT, nullptr);
-        //glDrawElements(GL_TRIANGLES, sizeof(indices)/4, GL_UNSIGNED_INT, nullptr);
-
-        red += red_shift;
-        green += green_shift;   
-        blue += blue_shift;
-
-        if (red > 1.0f || red < 0.0f)
-        {
-            red_shift = -red_shift;
-            red += red_shift;
-        }
-        if (green > 1.0 || green < 0.0f)
-        {
-            green_shift = -green_shift;
-            green += green_shift;
-        }
-        if (blue > 1.0 || blue < 0.0f)
-        {
-            blue_shift = -blue_shift;
-            blue += blue_shift;
-        }
 
         trans_matrix[3] += x_d;
         trans_matrix[7] += y_d;
@@ -355,22 +364,9 @@ int main(void)
         x_rot_matrix[9] = sinf(x_rot);
         x_rot_matrix[10] = cosf(x_rot);
 
-        glUniform4f(uniform, red, green, blue, 1.0f);
+
         glUniformMatrix4fv(trans_m_uniform, 1, GL_TRUE, trans_matrix);
         glUniformMatrix4fv(x_rot_m_uniform, 1, GL_TRUE, x_rot_matrix);
         glUniformMatrix4fv(y_rot_m_uniform, 1, GL_TRUE, y_rot_matrix);
         glUniformMatrix4fv(z_rot_m_uniform, 1, GL_TRUE, z_rot_matrix);
-
-
-        // Swap front and back buffers
-        glfwSwapBuffers(window);
-
-        // Poll for and process events
-        glfwPollEvents();
-    }
-
-    glDeleteProgram(program);
-
-    glfwTerminate();
-    return 0;
-}
+    */

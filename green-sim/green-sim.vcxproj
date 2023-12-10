@@ -21,18 +21,16 @@
   <ItemGroup>
     <ClCompile Include="src\translation-handler.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\math.cpp" />
     <ClCompile Include="src\spherical-mesh.cpp" />
-    <ClCompile Include="src\translation_module.cpp" />
+    <ClCompile Include="src\transformation-module.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\fragment-shader.frag" />
     <None Include="res\shaders\vertex-shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\math.h" />
     <ClInclude Include="src\spherical-mesh.h" />
-    <ClInclude Include="src\translation_module.h" />
+    <ClInclude Include="src\transformation-module.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
