@@ -9,6 +9,7 @@
   <ItemGroup>
     <ClInclude Include="src\spherical-mesh.h" />
     <ClInclude Include="src\transformation-module.h" />
+    <ClInclude Include="src\main.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\fragment-shader.frag" />
