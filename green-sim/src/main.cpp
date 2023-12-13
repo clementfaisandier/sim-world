@@ -214,13 +214,17 @@ int main(void)
 
     TransformationModule TM = TransformationModule();
 
+    TM.SetScale(glm::vec3(0.1, 0.1, 0.1));
+
+
     glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
 
     int transformation_m_uniform = glGetUniformLocation(program, "translation_matrix");
 
-    glUniformMatrix4fv(transformation_m_uniform, 1, GL_TRUE, glm::value_ptr(transformation_matrix));
+    glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
-
+    float dt = 0.005;
+    float t = 0;
 
     // Loop until the user closes the window 
     while (!glfwWindowShouldClose(window))
@@ -230,11 +234,18 @@ int main(void)
         glDrawElements(GL_TRIANGLES, index_count*3, GL_UNSIGNED_INT, nullptr);
         //glDrawElements(GL_TRIANGLES, sizeof(indices)/4, GL_UNSIGNED_INT, nullptr);
 
-        TM.Rotate(glm::vec3(PI / 180, 0, 0));
+
+        t += ((t + dt) > (2 * PI)) ? dt - (2 * PI) : dt;
+
+        printf("%f\n", t);
+
+        TM.Rotate(glm::vec3(0.01, 0.01, 0.01));
+        TM.Scale(glm::vec3(0, 0, 0));
+        TM.SetCoordinates(glm::vec3(sinf(t)/2, cos(t)/2, 0));
 
         glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
 
-        glUniformMatrix4fv(transformation_m_uniform, 1, GL_TRUE, glm::value_ptr(transformation_matrix));
+        glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
 
         // Swap front and back buffers
