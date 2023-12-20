@@ -19,8 +19,6 @@ glm::vec3 TransformationModule::SetCoordinates(glm::vec3 coordinate) {
 }
 glm::vec3 TransformationModule::Move(glm::vec3 translation) {
 	this->coordinate += translation;
-	//printf("\n%f %f %f\n", coordinate[0], coordinate[1], coordinate[2]);
-
 	return this->coordinate;
 
 
@@ -72,7 +70,7 @@ glm::mat4 TransformationModule::GetFinalTransformMat() {
 
 	glm::mat4x4 final_matrix = (translation_matrix * x_rotation_matrix * y_rotation_matrix * z_rotation_matrix * scaling_matrix);
 
-	if (true) {
+	if (false) {
 		printf("matrices: \n");
 		PrintMatrix(scaling_matrix);
 		PrintMatrix(x_rotation_matrix);

@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "spherical-mesh.h"
+#include "spherical-mesh-builder.h"
 #include "transformation-module.h"
 
 #include <cmath>

@@ -3,13 +3,14 @@
   <ItemGroup>
     <ClCompile Include="src\translation-handler.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\spherical-mesh.cpp" />
+    <ClCompile Include="src\spherical-mesh-builder.cpp" />
     <ClCompile Include="src\transformation-module.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\spherical-mesh.h" />
+    <ClInclude Include="src\spherical-mesh-builder.h" />
     <ClInclude Include="src\transformation-module.h" />
     <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\fragment-shader.frag" />

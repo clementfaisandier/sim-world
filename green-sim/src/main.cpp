@@ -156,15 +156,17 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
     
-    SphericalMesh earth_tensor = SphericalMesh(3 ,2);
+    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(1.0, 3, 2);
 
-    float* positions = earth_tensor.GetVertexBuffer();
-    unsigned int* indices = earth_tensor.GetIndexBuffer();
+    Mesh* mesh = mesh_builder.GetMesh();
 
-    unsigned int index_count = earth_tensor.GetIndexBufferCount();
+    mesh->Print();
 
+    float* positions = mesh->vertex_buffer;
+    unsigned int* indices = mesh->index_buffer;
 
-    if (DEBUG) earth_tensor.PrintDrawOrder();
+    unsigned int index_count = mesh->index_buffer_count;
+
     
 
     // create VAO
@@ -176,7 +178,7 @@ int main(void)
     unsigned int vertexBuffer; // buffer id
     glGenBuffers(1, &vertexBuffer); // generate the actual buffer in memory
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer); // tell opengl how to handle stride and how to navigate data
-    glBufferData(GL_ARRAY_BUFFER, earth_tensor.GetVertexBufferSize(), positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
+    glBufferData(GL_ARRAY_BUFFER, mesh->vertex_buffer_size, positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
     //glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
 
 
@@ -187,7 +189,7 @@ int main(void)
     unsigned int indexBuffer;
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); // because this is an index buffer we must bind it differently
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, earth_tensor.GetIndexBufferSize(), indices, GL_STATIC_DRAW); // same when adding data
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->index_buffer_size, indices, GL_STATIC_DRAW); // same when adding data
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // same when adding data
 
 
@@ -231,7 +233,7 @@ int main(void)
     {
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
-        glDrawElements(GL_TRIANGLES, index_count*3, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, mesh->index_buffer_count * mesh->primitive_num_components, GL_UNSIGNED_INT, nullptr);
         //glDrawElements(GL_TRIANGLES, sizeof(indices)/4, GL_UNSIGNED_INT, nullptr);
 
 
