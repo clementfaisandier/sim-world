@@ -22,23 +22,21 @@ private:
 
 	float lon_step;
 	float lat_step;
-	float depth_step;
 
-	float inner_bound;
-	float outer_bound;
+	float scale;
 
-	void InitFields(float inner_bound, float outer_bound, unsigned int num_lon, unsigned int num_lat, unsigned int num_depth);
+	void InitFields(float scale, unsigned int num_lon, unsigned int num_lat);
 
-	void DefineSurfaceVertices(float* vertex_buffer, int depth_i);
-	void DefineVolumeVertices();
+	void DefineSurfaceVertices();
 
 	void DefineSurfaceIndices();
 
 public:
 
-	SphericalMeshBuilder(float inner_bound, unsigned int num_lon, unsigned int num_lat);
-	SphericalMeshBuilder(float inner_bound, float outer_bound, unsigned int num_lon, unsigned int num_lat, unsigned int num_depth);
+	SphericalMeshBuilder(float scale, unsigned int num_lon, unsigned int num_lat);
 
 	Mesh* GetMesh();
+
+	void Print();
 
 };

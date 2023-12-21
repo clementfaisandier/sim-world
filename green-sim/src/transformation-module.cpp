@@ -20,8 +20,6 @@ glm::vec3 TransformationModule::SetCoordinates(glm::vec3 coordinate) {
 glm::vec3 TransformationModule::Move(glm::vec3 translation) {
 	this->coordinate += translation;
 	return this->coordinate;
-
-
 }
 
 glm::vec3 TransformationModule::SetRotation(glm::vec3 rotation) {

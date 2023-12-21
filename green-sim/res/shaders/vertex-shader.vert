@@ -6,9 +6,11 @@ uniform mat4 translation_matrix;
 
 uniform vec4 u_color;
 
-const vec4 colors[3] = vec4[3] (vec4(1, 0, 0, 1),
+const vec4 colors[5] = vec4[5] (vec4(1, 1, 1, 1),
+                                vec4(1, 0, 0, 1),
                                 vec4(0, 1, 0, 1),
-                                vec4(0, 0, 1, 1));
+                                vec4(0, 0, 1, 1),
+                                vec4(0, 0, 0, 1));
 
 out vec4 p_color;
 

@@ -147,10 +147,10 @@ int main(void)
     glDebugMessageCallback(GLErrorCallback, 0);
 
     // face culling optimization -> can lead to invisible triangles if the index buffer defines the trianges in a counter-clockwise fashion
-    //glEnable(GL_CULL_FACE);
-    //glFrontFace(GL_CW);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
 
-    //glEnable(GL_DEPTH_TEST);
+   //glEnable(GL_DEPTH_TEST);
 
     glfwSwapInterval(1);
 
@@ -158,12 +158,30 @@ int main(void)
     
     SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(1.0, 3, 2);
 
+    mesh_builder.Print();
+
     Mesh* mesh = mesh_builder.GetMesh();
 
     mesh->Print();
 
+    float man_pos[15] = { 0.0, 0.0, 0.5,
+                            0.0, 1.0, 0.0,
+                            0.866025, -0.500000, -0.000000,
+                            -0.866025, -0.500000, -0.000000,
+                            0.0, 0.0, -1.0, };
+
+    unsigned int man_ind[18] = { 0, 2, 1,
+                                0, 3, 2,
+                                0, 1, 3,
+                                4, 1, 2,
+                                4, 2, 3,
+                                4, 3, 1 };
+
     float* positions = mesh->vertex_buffer;
     unsigned int* indices = mesh->index_buffer;
+
+    //float* positions = man_pos;
+    //unsigned int* indices = man_ind;
 
     unsigned int index_count = mesh->index_buffer_count;
 
@@ -216,7 +234,8 @@ int main(void)
 
     TransformationModule TM = TransformationModule();
 
-    TM.SetScale(glm::vec3(0.1, 0.1, 0.1));
+    TM.SetScale(glm::vec3(0.3, 0.3, 0.3));
+
 
 
     glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
@@ -239,7 +258,7 @@ int main(void)
 
         t += ((t + dt) > (2 * PI)) ? dt - (2 * PI) : dt;
 
-        printf("%f\n", t);
+        //printf("%f\n", t);
 
         TM.Rotate(glm::vec3(0.01, 0.01, 0.01));
         TM.Scale(glm::vec3(0, 0, 0));
@@ -262,111 +281,3 @@ int main(void)
     glfwTerminate();
     return 0;
 }
-
-
-/*
-    // matrix
-
-    //Matrix4f matrix = Matrix4f(Matrix4f::TRANSLATION_MODE, 0.1, 0.1, 0.1);
-
-    // scaling matrix
-
-    float scale = 0.5;
-    float proportional_scale_matrix[16] = {
-                        scale, 0.0, 0.0, 0.1,
-                        0.0, scale, 0.0, 0.1,
-                        0.0, 0.0, scale, 0.1,
-                        0.0, 0.0, 0.0, 1.0
-    };
-
-    // translation matrix
-
-    float x_d = 0;
-    float y_d = 0;
-    float z_d = 0;
-    float trans_matrix[16] = {
-                        1.0, 0.0, 0.0, 0.1,
-                        0.0, 1.0, 0.0, 0.1,
-                        0.0, 0.0, 1.0, 0.1,
-                        0.0, 0.0, 0.0, 1.0
-    };
-
-    // rotational matrix
-
-    float x_rot = 0;
-    float y_rot = 0;
-    float z_rot = 0;
-    float x_rot_d = 0;
-    float y_rot_d = PI / 180;
-    float z_rot_d = 0;
-
-    float z_rot_matrix[16] = {
-                        cosf(z_rot), -sinf(z_rot), 0.0, 0.0,
-                        sinf(z_rot), cosf(z_rot), 0.0, 0.0,
-                        0.0, 0.0, 1.0, 0.0,
-                        0.0, 0.0, 0.0, 1.0
-    };
-    float y_rot_matrix[16] = {
-                        cosf(y_rot), 0.0, -sinf(y_rot), 0.0,
-                        0.0, 1.0, 0.0, 0.0,
-                        sinf(y_rot), 0.0, cosf(y_rot), 0.0,
-                        0.0, 0.0, 0.0, 1.0
-    };
-    float x_rot_matrix[16] = {
-                       1.0, 0.0, 0.0, 0.0,
-                       0.0, cosf(x_rot), -sinf(x_rot), 0.0,
-                       0.0, sinf(x_rot), cosf(x_rot), 0.0,
-                       0.0, 0.0, 0.0, 1.0
-    };
-
-
-
-
-
-
-    int trans_m_uniform = glGetUniformLocation(program, "translation_matrix");
-    int x_rot_m_uniform = glGetUniformLocation(program, "x_rot_matrix");
-    int y_rot_m_uniform = glGetUniformLocation(program, "y_rot_matrix");
-    int z_rot_m_uniform = glGetUniformLocation(program, "z_rot_matrix");
-    int scale_m_uniform = glGetUniformLocation(program, "scale_matrix");
-
-    glUniformMatrix4fv(trans_m_uniform, 1, GL_TRUE, trans_matrix);
-    glUniformMatrix4fv(x_rot_m_uniform, 1, GL_TRUE, x_rot_matrix);
-    glUniformMatrix4fv(y_rot_m_uniform, 1, GL_TRUE, y_rot_matrix);
-    glUniformMatrix4fv(z_rot_m_uniform, 1, GL_TRUE, z_rot_matrix);
-    glUniformMatrix4fv(scale_m_uniform, 1, GL_TRUE, proportional_scale_matrix);
-
-    // IN DISPLAY LOOP:
-
-
-
-
-        trans_matrix[3] += x_d;
-        trans_matrix[7] += y_d;
-        trans_matrix[11] += z_d;
-
-        z_rot += z_rot_d;
-        y_rot += y_rot_d;
-        x_rot += x_rot_d;
-
-        z_rot_matrix[0] = cosf(z_rot);
-        z_rot_matrix[1] = -sinf(z_rot);
-        z_rot_matrix[4] = sinf(z_rot);
-        z_rot_matrix[5] = cosf(z_rot);
-
-        y_rot_matrix[0] = cosf(y_rot);
-        y_rot_matrix[2] = -sinf(y_rot);
-        y_rot_matrix[8] = sinf(y_rot);
-        y_rot_matrix[10] = cosf(y_rot);
-
-        x_rot_matrix[5] = cosf(x_rot);
-        x_rot_matrix[6] = -sinf(x_rot);
-        x_rot_matrix[9] = sinf(x_rot);
-        x_rot_matrix[10] = cosf(x_rot);
-
-
-        glUniformMatrix4fv(trans_m_uniform, 1, GL_TRUE, trans_matrix);
-        glUniformMatrix4fv(x_rot_m_uniform, 1, GL_TRUE, x_rot_matrix);
-        glUniformMatrix4fv(y_rot_m_uniform, 1, GL_TRUE, y_rot_matrix);
-        glUniformMatrix4fv(z_rot_m_uniform, 1, GL_TRUE, z_rot_matrix);
-    */
