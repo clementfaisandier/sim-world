@@ -32,8 +32,8 @@ public:
 
 	Mesh() {}
 	~Mesh() {
-		if (vertex_buffer != nullptr) free(vertex_buffer);
-		if (index_buffer != nullptr) free(index_buffer);
+		if (vertex_buffer != nullptr) { free(vertex_buffer); vertex_buffer = nullptr; }
+		if (index_buffer != nullptr) { free(index_buffer); vertex_buffer = nullptr; }
 	}
 
 	void Print() {

@@ -156,11 +156,11 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
     
-    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(1.0, 3, 2);
+    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(1.0, 1.3, 3, 2, 3);
 
     mesh_builder.Print();
 
-    Mesh* mesh = mesh_builder.GetMesh();
+    Mesh* mesh = mesh_builder.GetSurfaceMesh();
 
     mesh->Print();
 

@@ -5,15 +5,12 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\spherical-mesh-builder.cpp" />
     <ClCompile Include="src\transformation-module.cpp" />
-    <ClCompile Include="src\compute-mesh.cpp" />
-    <ClCompile Include="src\athmospheric-mesh-builder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\spherical-mesh-builder.h" />
     <ClInclude Include="src\transformation-module.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\mesh.h" />
-    <ClInclude Include="src\athmospheric-mesh-builder.h" />
     <ClInclude Include="src\compute-mesh.h" />
   </ItemGroup>
   <ItemGroup>

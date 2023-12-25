@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "spherical-mesh.h"
+#include "spherical-mesh-builder.h"
 
 TEST(SphericalMeshTest, Handles3_2) {
 

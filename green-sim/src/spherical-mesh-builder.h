@@ -1,5 +1,6 @@
 #pragma once
 #include "mesh.h"
+#include "compute-mesh.h"
 
 #include <iostream>
 #include <glm/trigonometric.hpp>
@@ -14,28 +15,37 @@ class SphericalMeshBuilder {
 
 private:
 
-	Mesh mesh = Mesh();
+	Mesh surface_mesh = Mesh();
+	ComputeMesh athmospheric_mesh = ComputeMesh();
 
 	unsigned int num_lon;
 	unsigned int num_lat;
-	unsigned int num_depth;
+	unsigned int num_layers;
 
 	float lon_step;
 	float lat_step;
 
-	float scale;
+	float scale_min;
+	float scale_max;
 
-	void InitFields(float scale, unsigned int num_lon, unsigned int num_lat);
+	void InitFields(float scale_min, float scale_max, unsigned int num_lon, unsigned int num_lat, unsigned int num_layers);
+
+	void InitSurfaceMesh();
+
+	void InitAthmosphericMesh();
 
 	void DefineSurfaceVertices();
 
 	void DefineSurfaceIndices();
 
+	void DefineAthmosphericMesh();
+
 public:
 
-	SphericalMeshBuilder(float scale, unsigned int num_lon, unsigned int num_lat);
+	SphericalMeshBuilder(float scale_min, float scale_max, unsigned int num_lon, unsigned int num_lat, unsigned int num_layers);
 
-	Mesh* GetMesh();
+	Mesh* GetSurfaceMesh();
+	ComputeMesh* GetComputeMesh();
 
 	void Print();
 
