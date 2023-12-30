@@ -15,6 +15,7 @@ public:
 	glm::vec3 coordinate;
 	glm::vec3 rotation;
 	glm::vec3 scale;
+	glm::vec4 perspective;
 
 	TransformationModule();
 	TransformationModule(glm::vec3 coordinate, glm::vec3 rotation, glm::vec3 scale);
@@ -27,6 +28,10 @@ public:
 
 	glm::vec3 SetScale(glm::vec3 scale);
 	glm::vec3 Scale(glm::vec3 scale);
+
+	glm::vec4 SetPerspective(float aspect_ratio, float vertical_fov, float near_z_plane, float far_z_plane);
+
+	void PrintMatrix(glm::mat4 matrix);
 
 	glm::mat4 GetFinalTransformMat();
 };

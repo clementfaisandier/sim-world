@@ -1,52 +1,90 @@
 #pragma once
-#include "mesh.h"
-#include "compute-mesh.h"
 
 #include <iostream>
-#include <glm/trigonometric.hpp>
+#include "glm/vec3.hpp"
+#include "glm/trigonometric.hpp"
 
-#define DEBUG false
+#define N_ATTR_P_VERTEX 3
+#define N_VERTEX_P_PRIMITIVE 3
 
-#define PI 3.14159265358
-#define H_PI 1.57079632679
-#define D_TO_RAD 0.01745329251
+struct SphericalGraphicsMesh {
+
+	float* vertex_buffer = nullptr;
+	unsigned int* index_buffer = nullptr;
+
+	unsigned int vertex_buffer_size = 0;
+	unsigned int index_buffer_size = 0;
+
+	unsigned int vertex_buffer_count = 0;
+	unsigned int index_buffer_count = 0; // num primitive draw calls
+
+	unsigned int num_lon = 0;
+	unsigned int num_lat = 0;
+	unsigned int num_layers = 0;
+};
+
+struct SphericalComputeMesh {
+
+	struct Cell {
+		glm::vec3 velocity;
+		float pressure;
+		float density;
+	};
+
+	Cell* compute_buffer = nullptr;
+
+	unsigned int compute_buffer_size = 0;
+
+	unsigned int compute_buffer_count = 0;
+
+	unsigned int num_lon = 0;
+	unsigned int num_lat = 0;
+	unsigned int num_layers = 0;
+};
 
 class SphericalMeshBuilder {
 
 private:
 
-	Mesh surface_mesh = Mesh();
-	ComputeMesh athmospheric_mesh = ComputeMesh();
+	unsigned int num_lon = 0;
+	unsigned int num_lat = 0;
+	unsigned int num_layers = 0;
 
-	unsigned int num_lon;
-	unsigned int num_lat;
-	unsigned int num_layers;
+	float scale_min = 0;
+	float scale_max = 0;
 
 	float lon_step;
 	float lat_step;
+	float layer_step; // scale adjusted
 
-	float scale_min;
-	float scale_max;
+	/*
+	* Param:
+	*	vertex_buffer: pre-allocated vertex buffer
+	* or
+	*	index_buffer: pre-allocated index buffer
+	* Return: 
+	*	(int) number of vertices defined
+	* or
+	*	(int) number of primitives defined
+	*/
+	int DefineSurfaceVertexBuffer(float* vertex_buffer, float scale);
+	int DefineSurfaceIndexBuffer(unsigned int* index_buffer);
 
-	void InitFields(float scale_min, float scale_max, unsigned int num_lon, unsigned int num_lat, unsigned int num_layers);
+	int DefineAthmosphereVertexBuffer(float* vertex_buffer);
+	int DefineAthmosphereIndexBuffer(unsigned int* index_buffer);
 
-	void InitSurfaceMesh();
-
-	void InitAthmosphericMesh();
-
-	void DefineSurfaceVertices();
-
-	void DefineSurfaceIndices();
-
-	void DefineAthmosphericMesh();
+	int DefineComputeBuffer(SphericalComputeMesh::Cell* compute_buffer);
 
 public:
 
-	SphericalMeshBuilder(float scale_min, float scale_max, unsigned int num_lon, unsigned int num_lat, unsigned int num_layers);
+	SphericalMeshBuilder(unsigned int num_lon, unsigned int num_lat, unsigned int num_layers, float scale_min, float scale_max);
 
-	Mesh* GetSurfaceMesh();
-	ComputeMesh* GetComputeMesh();
-
-	void Print();
-
+	SphericalGraphicsMesh* GetSurfaceMesh();
+	SphericalGraphicsMesh* GetAthmosphericMesh();
+	
+	SphericalComputeMesh* GetComputeMesh();
 };
+
+// Pure Mesh Functions	
+
+void PrintSphericalGraphicsMesh(SphericalGraphicsMesh* mesh);

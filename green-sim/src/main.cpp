@@ -156,13 +156,11 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
     
-    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(1.0, 1.3, 3, 2, 3);
+    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(6, 6, 1, 1.0, 1.0);
 
-    mesh_builder.Print();
+    SphericalGraphicsMesh* mesh = mesh_builder.GetSurfaceMesh();
 
-    Mesh* mesh = mesh_builder.GetSurfaceMesh();
-
-    mesh->Print();
+    PrintSphericalGraphicsMesh(mesh);
 
     float man_pos[15] = { 0.0, 0.0, 0.5,
                             0.0, 1.0, 0.0,
@@ -235,6 +233,7 @@ int main(void)
     TransformationModule TM = TransformationModule();
 
     TM.SetScale(glm::vec3(0.3, 0.3, 0.3));
+    TM.SetCoordinates(glm::vec3(0.0, 0.0, 0.0));
 
 
 
@@ -252,9 +251,7 @@ int main(void)
     {
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
-        glDrawElements(GL_TRIANGLES, mesh->index_buffer_count * mesh->primitive_num_components, GL_UNSIGNED_INT, nullptr);
         //glDrawElements(GL_TRIANGLES, sizeof(indices)/4, GL_UNSIGNED_INT, nullptr);
-
 
         t += ((t + dt) > (2 * PI)) ? dt - (2 * PI) : dt;
 
@@ -262,12 +259,13 @@ int main(void)
 
         TM.Rotate(glm::vec3(0.01, 0.01, 0.01));
         TM.Scale(glm::vec3(0, 0, 0));
-        TM.SetCoordinates(glm::vec3(sinf(t)/2, cos(t)/2, 0));
+        TM.SetCoordinates(glm::vec3(sinf(t)/2, cos(t)/2, 0.0));
 
         glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
 
         glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
+        glDrawElements(GL_TRIANGLES, mesh->index_buffer_count* N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
 
         // Swap front and back buffers
         glfwSwapBuffers(window);

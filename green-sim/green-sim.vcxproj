@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\translation-handler.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\spherical-mesh-builder.cpp" />
     <ClCompile Include="src\transformation-module.cpp" />
@@ -29,9 +28,7 @@
     <None Include="res\shaders\vertex-shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\compute-mesh.h" />
     <ClInclude Include="src\main.h" />
-    <ClInclude Include="src\mesh.h" />
     <ClInclude Include="src\spherical-mesh-builder.h" />
     <ClInclude Include="src\transformation-module.h" />
   </ItemGroup>

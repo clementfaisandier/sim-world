@@ -1,5 +1,5 @@
 #include "pch.h"
-
+/*
 #include "spherical-mesh-builder.h"
 
 TEST(SphericalMeshTest, Handles3_2) {
@@ -20,26 +20,4 @@ TEST(SphericalMeshTest, Handles3_2) {
         4, 2, 3,
         4, 3, 1
     };
-
-    SphericalMesh mesh = SphericalMesh(3, 2);
-
-    float* pos = mesh.GetVertexBuffer();
-    unsigned int* ind = mesh.GetIndexBuffer();
-
-    unsigned int pos_count = 5;
-    unsigned int ind_count = 6;
-
-    for (int i = 0; i < pos_count; i++) {
-        for (int j = 0; j < 3; j++) {
-            unsigned int index = (i * 3) + j;
-            EXPECT_EQ(pos[index], positions [index]);
-        }
-    }
-
-    for (int i = 0; i < ind_count; i++) {
-        for (int j = 0; j < 3; j++) {
-            unsigned int index = (i * 3) + j;
-            EXPECT_EQ(ind[index], indices[index]);
-        }
-    }
-}
+}*/

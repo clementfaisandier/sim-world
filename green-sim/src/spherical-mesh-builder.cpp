@@ -1,181 +1,267 @@
 #include "spherical-mesh-builder.h"
 
-SphericalMeshBuilder::SphericalMeshBuilder(float scale_min, float scale_max, unsigned int num_lon, unsigned int num_lat, unsigned int num_layers) {
 
+// PUBLIC
+
+SphericalMeshBuilder::SphericalMeshBuilder(unsigned int num_lon, unsigned int num_lat, unsigned int num_layers, float scale_min, float scale_max) {
 	if (scale_min == 0 || scale_max < scale_min || num_lon == 0 || num_lat == 0 || num_layers == 0) {
 		std::cout << "Error: SphericalMeshBuilder: Invalid Input\n";
 		std::exit(1);
 	}
 
-	InitFields(scale_min, scale_max, num_lon, num_lat, num_layers);
-	InitSurfaceMesh();
-	InitAthmosphericMesh();
-
-	DefineSurfaceVertices();
-	DefineSurfaceIndices();
-
-	DefineAthmosphericMesh();
-}
-
-void SphericalMeshBuilder::InitFields(float scale_min, float scale_max, unsigned int num_lon, unsigned int num_lat, unsigned int num_layers) {
-
 	this->num_lon = num_lon;
 	this->num_lat = num_lat;
 	this->num_layers = num_layers;
 
-	this->lon_step = glm::radians(360.0 / num_lon);
-	this->lat_step = glm::radians(180.0 / num_lat);
-
 	this->scale_min = scale_min;
 	this->scale_max = scale_max;
+
+	this->lon_step = glm::radians(360.0 / num_lon);
+	this->lat_step = glm::radians(180.0 / num_lat);
+	this->layer_step = (scale_max - scale_min) / num_layers;
 }
 
-void SphericalMeshBuilder::InitSurfaceMesh() {
+SphericalGraphicsMesh* SphericalMeshBuilder::GetSurfaceMesh() {
 
-	surface_mesh.vertex_num_components = N_VERTEX_COMPONENTS;
-	surface_mesh.vertex_size = sizeof(*surface_mesh.vertex_buffer) * N_VERTEX_COMPONENTS;
-
-	surface_mesh.primary_count = num_lon;
-	surface_mesh.secondary_count = num_lat;
-	surface_mesh.tertiary_count = 1;
-
-	surface_mesh.vertex_buffer_count = (num_lon * (num_lat - 1) + 2);
-	surface_mesh.index_buffer_count = (num_lon * (num_lat - 1) * 2); // only applicable to current index setup
-
-	surface_mesh.vertex_buffer_size = surface_mesh.vertex_buffer_count * surface_mesh.vertex_size;
-	surface_mesh.index_buffer_size = sizeof(*surface_mesh.index_buffer) * N_PRIMITIVE_COMPONENTS * surface_mesh.index_buffer_count;
-
-	surface_mesh.vertex_buffer = (float*)malloc(surface_mesh.vertex_buffer_size);
-	surface_mesh.index_buffer = (unsigned int*)malloc(surface_mesh.index_buffer_size);
-
-	if (surface_mesh.vertex_buffer == NULL || surface_mesh.index_buffer == NULL) {
-		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate vertex/index buffer.\nVB: %u, IB: %u\n", &surface_mesh.vertex_buffer, &surface_mesh.index_buffer);
+	// Allocate memory for the mesh
+	SphericalGraphicsMesh* mesh  = (SphericalGraphicsMesh*) malloc(sizeof(SphericalGraphicsMesh));
+	if (mesh == NULL) {
+		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate mesh.\n");
 		exit(errno);
 	}
+
+	// init mesh fields
+
+	mesh->num_lon = num_lon;
+	mesh->num_lat = num_lat;
+	mesh->num_layers = 1;
+
+	mesh->vertex_buffer_count = (num_lon * (num_lat - 1) + 2);
+	mesh->index_buffer_count = (num_lon * (num_lat - 1) * 2);
+
+	mesh->vertex_buffer_size = sizeof (*mesh->vertex_buffer) * mesh->vertex_buffer_count * N_ATTR_P_VERTEX;
+	mesh->index_buffer_size = sizeof(*mesh->index_buffer) * mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE;
+
+	// allocate vertex and index buffer
+
+	mesh->vertex_buffer = (float*)malloc(mesh->vertex_buffer_size);
+	mesh->index_buffer = (unsigned int*)malloc(mesh->index_buffer_size);
+
+	if (mesh->vertex_buffer == NULL || mesh->index_buffer == NULL) {
+		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate vertex/index buffer.\nVB: %u, IB: %u\n", &mesh->vertex_buffer, &mesh->index_buffer);
+		exit(errno);
+	}
+
+	// define vertex and index buffer	
+
+	DefineSurfaceVertexBuffer(mesh->vertex_buffer, scale_min);
+	DefineSurfaceIndexBuffer(mesh->index_buffer);
+
+	return mesh;
 }
 
-void SphericalMeshBuilder::InitAthmosphericMesh() {
+SphericalGraphicsMesh* SphericalMeshBuilder::GetAthmosphericMesh() {
 
-	athmospheric_mesh.total_count = (num_lon * (num_lat - 1) + 2);
-	athmospheric_mesh.total_size = athmospheric_mesh.total_count * sizeof(ComputeMesh::Cell);
+	// Allocate memory for the mesh
+	SphericalGraphicsMesh* mesh = (SphericalGraphicsMesh*)malloc(sizeof(SphericalGraphicsMesh));
+	if (mesh == NULL) {
+		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate mesh.\n");
+		exit(errno);
+	}
 
-	athmospheric_mesh.primary_count = num_lon;
-	athmospheric_mesh.secondary_count = num_lon;
-	athmospheric_mesh.tertiary_count = num_lon;
+	// init mesh fields
 
-	athmospheric_mesh.mesh = (ComputeMesh::Cell*) malloc(athmospheric_mesh.total_size);
+	mesh->num_lon = num_lon;
+	mesh->num_lat = num_lat;
+	mesh->num_layers = num_layers;
+
+	unsigned int vertex_count_per_layer = (num_lon * (num_lat - 1) + 2);
+	unsigned int index_count_per_layer = (num_lon * (num_lat - 1) * 2);
+	mesh->vertex_buffer_count = vertex_count_per_layer * num_layers;
+	mesh->index_buffer_count = index_count_per_layer * num_layers;
+
+	unsigned int vertex_size_per_layer = sizeof(*mesh->vertex_buffer) * mesh->vertex_buffer_count * N_ATTR_P_VERTEX;
+	unsigned int index_size_per_layer = sizeof(*mesh->index_buffer) * mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE;
+	mesh->vertex_buffer_size = vertex_size_per_layer * num_layers;
+	mesh->index_buffer_size = index_size_per_layer * num_layers;
+
+	// allocate vertex and index buffer
+
+	mesh->vertex_buffer = (float*)malloc(mesh->vertex_buffer_size);
+	mesh->index_buffer = (unsigned int*)malloc(mesh->index_buffer_size);
+
+	if (mesh->vertex_buffer == NULL || mesh->index_buffer == NULL) {
+		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate vertex/index buffer.\nVB: %u, IB: %u\n", &mesh->vertex_buffer, &mesh->index_buffer);
+		exit(errno);
+	}
+
+	// define vertex and index buffer	
+
+	for (int i = 0; i < num_layers; i++) {
+
+		DefineAthmosphereVertexBuffer(mesh->vertex_buffer + (i * vertex_count_per_layer));
+		DefineAthmosphereIndexBuffer(mesh->index_buffer + (i * index_count_per_layer));
+	}
+
+	return mesh;
 }
 
+SphericalComputeMesh* SphericalMeshBuilder::GetComputeMesh() {
 
-void SphericalMeshBuilder::DefineSurfaceVertices() {
+	// Allocate memory for the mesh
 
-	int vertex_i = 0;
+	SphericalComputeMesh* mesh = (SphericalComputeMesh*)malloc(sizeof(SphericalComputeMesh));
+	if (mesh == NULL) {
+		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate mesh.\n");
+		exit(errno);
+	}
 
-	float* vertex_buffer = surface_mesh.vertex_buffer;
 
-	// north pole
-	vertex_buffer[vertex_i++] = 0.0; // x
-	vertex_buffer[vertex_i++] = 0.0; // y
-	vertex_buffer[vertex_i++] = scale_min; // z
+	// init mesh fields
 
-	for (int lat_i = 1; lat_i < num_lat; lat_i++) { // defines non-pole vertices
+	mesh->num_lon = num_lon;
+	mesh->num_lat = num_lat;
+	mesh->num_layers = num_layers;
 
-		float lat = H_PI - (lat_step * lat_i);
+	mesh->compute_buffer_count = (num_lon * (num_lat - 1) + 2) * num_layers;
 
-		for (int lon_i = 0; lon_i < num_lon; lon_i++) {
+	mesh->compute_buffer_size = sizeof(*mesh->compute_buffer) * mesh->compute_buffer_count;
 
-			float lon = lon_step * lon_i;
+	// allocate compute buffer
 
-			vertex_buffer[vertex_i++] = cos(lat) * sin(lon) * scale_min; // x
-			vertex_buffer[vertex_i++] = cos(lat) * cos(lon) * scale_min; // y
-			vertex_buffer[vertex_i++] = sin(lat) * scale_min; // z
+	mesh->compute_buffer = (SphericalComputeMesh::Cell*)malloc(mesh->compute_buffer_size);
+
+	if (mesh->compute_buffer == NULL) {
+		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate compute buffer.\n");
+		exit(errno);
+	}
+
+	// define compute buffer
+
+	DefineComputeBuffer(mesh->compute_buffer);
+
+	return mesh;
+}
+
+// PRIVATE
+
+int SphericalMeshBuilder::DefineSurfaceVertexBuffer(float* vertex_buffer, float scale) {
+
+	unsigned int vbi = 0; // vertex buffer index
+
+	// Define the top vertex
+	vertex_buffer[vbi++] = 0.0f;
+	vertex_buffer[vbi++] = scale_min;
+	vertex_buffer[vbi++] = 0.0f;
+
+	// Define middle vertices
+	for (int i = 1; i < num_lat; i++) {
+		for (int j = 0; j < num_lon; j++) {
+
+			float lon = j * lon_step;
+			float lat = i * lat_step;
+
+			float x = scale * sin(lat) * cos(lon);
+			float y = scale * cos(lat);
+			float z = scale * sin(lat) * sin(lon);
+
+			vertex_buffer[vbi++] = x;
+			vertex_buffer[vbi++] = y;
+			vertex_buffer[vbi++] = z;
 		}
 	}
 
-	// south pole
-	vertex_buffer[vertex_i++] = 0.0; // x
-	vertex_buffer[vertex_i++] = 0.0; // y
-	vertex_buffer[vertex_i++] = -scale_min; // z
+	// Define the bottom vertex
+	vertex_buffer[vbi++] = 0.0f;
+	vertex_buffer[vbi++] = -scale_min;
+	vertex_buffer[vbi++] = 0.0f;
+
+	return vbi / N_ATTR_P_VERTEX; // TODO VERIFY
 }
 
-void SphericalMeshBuilder::DefineSurfaceIndices() {
+int SphericalMeshBuilder::DefineSurfaceIndexBuffer(unsigned int* index_buffer) {
 
-	unsigned int* index_buffer = surface_mesh.index_buffer;
+	unsigned int ibi = 0; // index buffer index
 
-	unsigned int buffer_i = 0;
+	// Define the top triangle fan
+	for (int i = 0; i < num_lon; i++) {
+		index_buffer[ibi++] = 0;
+		index_buffer[ibi++] = i + 1;
+		index_buffer[ibi++] = (i + 1) % num_lon + 1;
+	}
 
-	unsigned int top_vertex_i = 0;
-	unsigned int bot_vertex_i = 1;
+	// Define the middle triangle strip
+	for (int i = 0; i < num_lat - 2; i++) {
+		for (int j = 0; j < num_lon; j++) {
 
-	for (int lat_i = 0; lat_i < num_lat; lat_i++) {
+			unsigned int top_left = i * num_lon + j + 1;
+			unsigned int bottom_left = (i + 1) * num_lon + j + 1;
 
-		unsigned int initial_top_vertex = top_vertex_i;
-		unsigned int initial_bot_vertex = bot_vertex_i;
+			unsigned int top_right = i * num_lon + (j + 1) % num_lon + 1;
+			unsigned int bottom_right = (i + 1) * num_lon + (j + 1) % num_lon + 1;
 
-		for (int lon_i = 1; lon_i <= num_lon; lon_i++) {
+			index_buffer[ibi++] = top_left;
+			index_buffer[ibi++] = bottom_left;
+			index_buffer[ibi++] = top_right;
 
-			if (lat_i == 0) {
-				index_buffer[buffer_i++] = top_vertex_i;
-				index_buffer[buffer_i++] = lon_i == num_lon ? initial_bot_vertex : bot_vertex_i + 1;
-				index_buffer[buffer_i++] = bot_vertex_i++;
+			index_buffer[ibi++] = top_right;
+			index_buffer[ibi++] = bottom_left;
+			index_buffer[ibi++] = bottom_right;
 
-				if (lon_i == num_lon)
-					top_vertex_i++;
 
-				if (DEBUG) printf("i: %d, a: %d, b: %d, c: %d\n", (buffer_i / 3) - 1, index_buffer[buffer_i - 3], index_buffer[buffer_i - 2], index_buffer[buffer_i - 1]);
-			}
-
-			else if (lat_i != num_lat - 1) {
-
-				unsigned int top_left = top_vertex_i++;
-				unsigned int top_right = lon_i == num_lon ? initial_top_vertex : top_vertex_i; // this longitude trick takes care of wrapping
-				unsigned int bot_left = bot_vertex_i++;
-				unsigned int bot_right = lon_i == num_lon ? initial_bot_vertex : bot_vertex_i;
-
-				index_buffer[buffer_i++] = bot_left;
-				index_buffer[buffer_i++] = top_left;
-				index_buffer[buffer_i++] = bot_right;
-
-				index_buffer[buffer_i++] = bot_right;
-				index_buffer[buffer_i++] = top_left;
-				index_buffer[buffer_i++] = top_right;
-
-				if (DEBUG) printf("i: %d, a: %d, b: %d, c: %d, d: %d\n", (buffer_i / 3) - 2, top_left, top_right, bot_left, bot_right);
-			}
-
-			else {
-				index_buffer[buffer_i++] = bot_vertex_i;
-				index_buffer[buffer_i++] = top_vertex_i++;
-				index_buffer[buffer_i++] = lon_i == num_lon ? initial_top_vertex : top_vertex_i;
-				if (DEBUG) printf("i: %d, a: %d, b: %d, c: %d\n", (buffer_i / 3) - 1, index_buffer[buffer_i - 3], index_buffer[buffer_i - 2], index_buffer[buffer_i - 1]);
-			}
+			/* Using CCW winding order, the triangles are defined as follows:
+			+-----+
+			|    /|
+			|	/ |
+			|  /  |
+			| /   |
+			|/    |
+			+-----+
+			*/
 		}
 	}
+
+	// Define the bottom triangle fan
+	for (int i = 0; i < num_lon; i++) {
+		index_buffer[ibi++] = (num_lat - 2) * num_lon + (i + 1) % num_lon + 1;
+		index_buffer[ibi++] = (num_lat - 2) * num_lon + i + 1;
+		index_buffer[ibi++] = num_lon * (num_lat - 1) + 1;
+	}
+
+	return ibi / N_VERTEX_P_PRIMITIVE;
 }
 
-void SphericalMeshBuilder::DefineAthmosphericMesh() {
-	
+int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(float* vertex_buffer) {
+	return -1;
+}
+int SphericalMeshBuilder::DefineAthmosphereIndexBuffer(unsigned int* index_buffer) {
+	return -1;
 }
 
-
-Mesh* SphericalMeshBuilder::GetSurfaceMesh() {
-	return &surface_mesh;
+int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* compute_buffer) {
+	return -1;
 }
 
-ComputeMesh* SphericalMeshBuilder::GetComputeMesh() {
-	return &athmospheric_mesh;
-}
+// Mesh Functions
 
-void SphericalMeshBuilder::Print() {
+void PrintSphericalGraphicsMesh(SphericalGraphicsMesh* mesh) {
 
-	std::cout << "\nSpherical Mesh Builder:\n\n" <<
-		"\tnum_lon: " << num_lon << std::endl <<
-		"\tnum_lat: " << num_lat << std::endl <<
-		"\tnum_depth: " << num_layers << std::endl <<
+	printf("\nSphericalGraphicsMesh:\n");
+	printf("\tnum_lon: %u\n", mesh->num_lon);
+	printf("\tnum_lat: %u\n", mesh->num_lat);
+	printf("\tnum_layers: %u\n", mesh->num_layers);
+	printf("\tvertex_buffer_count: %u\n", mesh->vertex_buffer_count);
+	printf("\tindex_buffer_count: %u\n", mesh->index_buffer_count);
+	printf("\tvertex_buffer_size: %u\n", mesh->vertex_buffer_size);
+	printf("\tindex_buffer_size: %u\n", mesh->index_buffer_size);
 
-		"\tlon_step: " << lon_step << std::endl <<
-		"\tlat_step: " << lat_step << std::endl <<
+	printf("\n\tvertex_buffer:\n");
+	for (int i = 0; i < mesh->vertex_buffer_count; i++) {
+		printf("\t\t%f, %f, %f\n", mesh->vertex_buffer[i * N_ATTR_P_VERTEX], mesh->vertex_buffer[i * N_ATTR_P_VERTEX + 1], mesh->vertex_buffer[i * N_ATTR_P_VERTEX + 2]);
+	}
 
-		"\tscale: " << scale_min << std::endl;
-
+	printf("\n\tindex_buffer:\n");
+	for (int i = 0; i < mesh->index_buffer_count; i++) {
+		printf("\t\t%u, %u, %u\n", mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE], mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE + 1], mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE + 2]);
+	}
 }

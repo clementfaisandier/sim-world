@@ -15,10 +15,12 @@ public:
 	
 		glm::vec3 velocity;
 		float pressure;
-		float density = 1;
+		float density;
 	};
 
 	Cell* mesh = nullptr;
+
+	Mesh* display_volumes = nullptr;
 
 	unsigned int total_size = 0;
 	unsigned int total_count = 0;
@@ -30,6 +32,7 @@ public:
 	ComputeMesh() {}
 	~ComputeMesh() {
 		if (mesh != nullptr) { free(mesh); mesh = nullptr; }
+		if (display_volumes != nullptr) { delete display_volumes; display_volumes = nullptr; }
 	}
 
 	void Print() {
@@ -42,14 +45,22 @@ public:
 			"\tsecondary_count: " << secondary_count << std::endl <<
 			"\ttertiary_count: " << tertiary_count << std::endl << std::endl;
 
-		std::cout << "Mesh:\n" << std::endl;
+		if (mesh != nullptr) {
+			std::cout << "Mesh:\n" << std::endl;
 
-		for (int i = 0; i < total_count; i++) {
+			for (int i = 0; i < total_count; i++) {
 
-			std::cout << "\tMesh: " << i << std::endl;
-			printf("\t\tVelocity: x,y,z: %f %f %f\n", mesh[i].velocity[0]);
-			std::cout << "\t\tPresure: " << mesh[i].pressure << std::endl <<
-				"\t\tDensity: " << mesh[i].density << std::endl;
+				std::cout << "\tMesh: " << i << std::endl;
+				printf("\t\tVelocity: x,y,z: %f %f %f\n", mesh[i].velocity[0], mesh[i].velocity[1], mesh[i].velocity[2]);
+				std::cout << "\t\tPresure: " << mesh[i].pressure << std::endl <<
+					"\t\tDensity: " << mesh[i].density << std::endl;
+			}
 		}
+
+		if (display_volumes != nullptr) {
+			display_volumes->Print();
+		}
+
+
 	}
 };
