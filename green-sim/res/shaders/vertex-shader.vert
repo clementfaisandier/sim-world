@@ -17,5 +17,5 @@ out vec4 p_color;
 void main()
 {
     gl_Position = translation_matrix * position;
-    //p_color = colors[2];
+    p_color = colors[gl_VertexID];
 }

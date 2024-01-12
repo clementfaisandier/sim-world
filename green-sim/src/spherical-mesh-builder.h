@@ -7,7 +7,7 @@
 #define N_ATTR_P_VERTEX 3
 #define N_VERTEX_P_PRIMITIVE 3
 
-struct SphericalGraphicsMesh {
+typedef struct SphericalGraphicsMesh {
 
 	float* vertex_buffer = nullptr;
 	unsigned int* index_buffer = nullptr;
@@ -23,9 +23,9 @@ struct SphericalGraphicsMesh {
 	unsigned int num_layers = 0;
 };
 
-struct SphericalComputeMesh {
+typedef struct SphericalComputeMesh {
 
-	struct Cell {
+	typedef struct Cell {
 		glm::vec3 velocity;
 		float pressure;
 		float density;
@@ -70,8 +70,9 @@ private:
 	int DefineSurfaceVertexBuffer(float* vertex_buffer, float scale);
 	int DefineSurfaceIndexBuffer(unsigned int* index_buffer);
 
-	int DefineAthmosphereVertexBuffer(float* vertex_buffer);
-	int DefineAthmosphereIndexBuffer(unsigned int* index_buffer);
+	// No use for these right now: not implementing volumes yet, just using 
+	int DefineAthmosphereVertexBuffer(float* vertex_buffer); // TODO
+	int DefineAthmosphereIndexBuffer(unsigned int* index_buffer); // TODO
 
 	int DefineComputeBuffer(SphericalComputeMesh::Cell* compute_buffer);
 

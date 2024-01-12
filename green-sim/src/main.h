@@ -9,7 +9,15 @@
 #include "spherical-mesh-builder.h"
 #include "transformation-module.h"
 
-#include <cmath>
 
-#define PI 3.14159265
-#define D_TO_RAD 0.01745329251
+static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+
+static void GLFWErrorCallback(int code, const char* description);
+
+static char* ParseShader(const char* filepath);
+
+static unsigned int CompileShader(unsigned int type, char* sourceCode);
+
+static unsigned int CreateProgram(unsigned int vertexShader, unsigned int fragmentShader);
+
+

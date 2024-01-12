@@ -1,119 +1,6 @@
 #include "main.h"
 
-
-// Error callback functions
-static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-{
-    // ignore list
-    switch (severity)
-    {
-    case GL_DEBUG_SEVERITY_NOTIFICATION:
-        return;
-    }
-    printf("OpenGL Error!\nSource: %x, type: %x, id: %d, severity: %x\nMessage: %s\n\n", source, type, id, severity, message);
-}
-static void GLFWErrorCallback(int code, const char* description)
-{
-    printf("GLFW Error!\nCode: %x: %s\n\n", code, description);
-}
-
-
-
-
-// returns the file as a string
-// NOTE: RETURNED STRING MUST BE DE-ALLOCATED
-static char* ParseShader(const char* filepath)
-{
-    FILE* file;
-    int error_no = fopen_s(&file, filepath, "rb");
-
-    if (error_no != 0 || file == 0) {
-        printf("Error whilst reading file: ERRNO #%d", error_no);
-        exit(error_no);
-    }
-
-    fseek(file, 0, SEEK_END); // I believe this sets the file pointer to the end of the file
-    long size = ftell(file); // and this figures out the size of the file using that new poiunter given the file data
-
-    char* fileAsString = (char*)malloc(size + 1);
-
-    fseek(file, 0, SEEK_SET); // reset file stream pointer
-    fread(fileAsString, 1, size, file); // places size number of char-sized memory from file into where: places file into where
-
-    fileAsString[size] = 0;
-
-    fclose(file);
-
-    return fileAsString;
-}
-
-static unsigned int CompileShader(unsigned int type, char* sourceCode)
-{
-    unsigned int shader = glCreateShader(type); // create shader object of given type
-    glShaderSource(shader, 1, &sourceCode, NULL);
-    glCompileShader(shader);
-
-    int result;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-
-    if (result == GL_FALSE)
-    {
-        std::cout << "Shader did not compile successfuly: " << (type == GL_FRAGMENT_SHADER ? "fragment" : "vertex");
-        exit(1);
-    }
-
-    return shader;
-}
-
-// this method is going to take some shader code in string format and make the shader, then link them into a single program
-static unsigned int CreateProgram(unsigned int vertexShader, unsigned int fragmentShader)
-{
-    unsigned int program = glCreateProgram(); // create program object to which shaders can be attached
-
-    glAttachShader(program, vertexShader); // attach
-    glAttachShader(program, fragmentShader);
-
-    // linking process
-    glLinkProgram(program);
-
-    // verify linking process
-    int result;
-    glGetProgramiv(program, GL_LINK_STATUS, &result);
-    if (result == GL_FALSE)
-    {
-        int max_length = 200;
-        char* log = (char*)malloc(max_length);
-        int length;
-
-        glGetProgramInfoLog(program, max_length, &length, log);
-
-        log[length] = 0;
-        printf("Linking Error: %s\n\n", log);
-
-        free(log);
-    }
-
-    glValidateProgram(program);
-
-    // verify validation process
-
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &result);
-    if (result == GL_FALSE)
-    {
-        int max_length = 200;
-        char* log = (char*)malloc(max_length);
-        int length;
-
-        glGetProgramInfoLog(program, max_length, &length, log);
-
-        log[length] = 0;
-        printf("Validation Error: %s\n\n", log);
-
-        free(log);
-    }
-
-    return program;
-}
+#define PI 3.14159265358979323846
 
 
 int main(void)
@@ -155,8 +42,12 @@ int main(void)
     glfwSwapInterval(1);
 
     std::cout << glGetString(GL_VERSION) << std::endl;
+
+
+
+    // MESHES AND VAOS
     
-    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(6, 6, 1, 1.0, 1.0);
+    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(360, 180, 1, 1.0, 1.0);
 
     SphericalGraphicsMesh* mesh = mesh_builder.GetSurfaceMesh();
 
@@ -278,4 +169,119 @@ int main(void)
 
     glfwTerminate();
     return 0;
+}
+
+
+// Error callback functions
+static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+    // ignore list
+    switch (severity)
+    {
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        return;
+    }
+    printf("OpenGL Error!\nSource: %x, type: %x, id: %d, severity: %x\nMessage: %s\n\n", source, type, id, severity, message);
+}
+static void GLFWErrorCallback(int code, const char* description)
+{
+    printf("GLFW Error!\nCode: %x: %s\n\n", code, description);
+}
+
+
+
+
+// returns the file as a string
+// NOTE: RETURNED STRING MUST BE DE-ALLOCATED
+static char* ParseShader(const char* filepath)
+{
+    FILE* file;
+    int error_no = fopen_s(&file, filepath, "rb");
+
+    if (error_no != 0 || file == 0) {
+        printf("Error whilst reading file: ERRNO #%d", error_no);
+        exit(error_no);
+    }
+
+    fseek(file, 0, SEEK_END); // I believe this sets the file pointer to the end of the file
+    long size = ftell(file); // and this figures out the size of the file using that new poiunter given the file data
+
+    char* fileAsString = (char*)malloc(size + 1);
+
+    fseek(file, 0, SEEK_SET); // reset file stream pointer
+    fread(fileAsString, 1, size, file); // places size number of char-sized memory from file into where: places file into where
+
+    fileAsString[size] = 0;
+
+    fclose(file);
+
+    return fileAsString;
+}
+
+static unsigned int CompileShader(unsigned int type, char* sourceCode)
+{
+    unsigned int shader = glCreateShader(type); // create shader object of given type
+    glShaderSource(shader, 1, &sourceCode, NULL);
+    glCompileShader(shader);
+
+    int result;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+
+    if (result == GL_FALSE)
+    {
+        std::cout << "Shader did not compile successfuly: " << (type == GL_FRAGMENT_SHADER ? "fragment" : "vertex");
+        exit(1);
+    }
+
+    return shader;
+}
+
+// this method is going to take some shader code in string format and make the shader, then link them into a single program
+static unsigned int CreateProgram(unsigned int vertexShader, unsigned int fragmentShader)
+{
+    unsigned int program = glCreateProgram(); // create program object to which shaders can be attached
+
+    glAttachShader(program, vertexShader); // attach
+    glAttachShader(program, fragmentShader);
+
+    // linking process
+    glLinkProgram(program);
+
+    // verify linking process
+    int result;
+    glGetProgramiv(program, GL_LINK_STATUS, &result);
+    if (result == GL_FALSE)
+    {
+        int max_length = 200;
+        char* log = (char*)malloc(max_length);
+        int length;
+
+        glGetProgramInfoLog(program, max_length, &length, log);
+
+        log[length] = 0;
+        printf("Linking Error: %s\n\n", log);
+
+        free(log);
+    }
+
+    glValidateProgram(program);
+
+    // verify validation process
+
+    glGetProgramiv(program, GL_VALIDATE_STATUS, &result);
+    if (result == GL_FALSE)
+    {
+        int max_length = 200;
+        char* log = (char*)malloc(max_length);
+        int length;
+
+        glGetProgramInfoLog(program, max_length, &length, log);
+
+        log[length] = 0;
+        printf("Validation Error: %s\n\n", log);
+
+        free(log);
+    }
+
+    return program;
 }

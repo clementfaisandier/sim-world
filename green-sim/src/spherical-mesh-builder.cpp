@@ -151,7 +151,7 @@ int SphericalMeshBuilder::DefineSurfaceVertexBuffer(float* vertex_buffer, float 
 
 	// Define the top vertex
 	vertex_buffer[vbi++] = 0.0f;
-	vertex_buffer[vbi++] = scale_min;
+	vertex_buffer[vbi++] = scale;
 	vertex_buffer[vbi++] = 0.0f;
 
 	// Define middle vertices
@@ -173,7 +173,7 @@ int SphericalMeshBuilder::DefineSurfaceVertexBuffer(float* vertex_buffer, float 
 
 	// Define the bottom vertex
 	vertex_buffer[vbi++] = 0.0f;
-	vertex_buffer[vbi++] = -scale_min;
+	vertex_buffer[vbi++] = -scale;
 	vertex_buffer[vbi++] = 0.0f;
 
 	return vbi / N_ATTR_P_VERTEX; // TODO VERIFY
@@ -232,14 +232,30 @@ int SphericalMeshBuilder::DefineSurfaceIndexBuffer(unsigned int* index_buffer) {
 }
 
 int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(float* vertex_buffer) {
-	return -1;
+	return -1; // TODO
 }
 int SphericalMeshBuilder::DefineAthmosphereIndexBuffer(unsigned int* index_buffer) {
-	return -1;
+	return -1; // TODO
 }
 
 int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* compute_buffer) {
-	return -1;
+
+	unsigned int cbi = 0; // compute buffer index
+	
+	for (int i = 0; i < num_layers; i++) {
+		for (int j = 0; j < num_lat; j++) {
+			for (int k = 0; k < num_lon; k++) {
+
+				compute_buffer[cbi++] = * new SphericalComputeMesh::Cell();
+				compute_buffer[cbi++].velocity = glm::vec3(0.0, 0.0, 0.0);
+				compute_buffer[cbi++].pressure = 0.0;
+				compute_buffer[cbi++].density = 1.0;
+				
+			}
+		}
+	}
+
+	return cbi;
 }
 
 // Mesh Functions
