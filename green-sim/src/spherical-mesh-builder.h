@@ -71,8 +71,10 @@ private:
 	int DefineSurfaceIndexBuffer(unsigned int* index_buffer);
 
 	// No use for these right now: not implementing volumes yet, just using 
-	int DefineAthmosphereVertexBuffer(float* vertex_buffer); // TODO
+	int DefineAthmosphereVertexBuffer(float* vertex_buffer);
+	void DefineAthmosphereComponentVertices(float* vertex_buffer, unsigned int* vbi, float x, float y, float z);
 	int DefineAthmosphereIndexBuffer(unsigned int* index_buffer); // TODO
+	void DefineAthmosphericVolume(unsigned int* index_buffer, unsigned int* ibi, unsigned int layer_offset);
 
 	int DefineComputeBuffer(SphericalComputeMesh::Cell* compute_buffer);
 

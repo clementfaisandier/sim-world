@@ -37,6 +37,10 @@ int main(void)
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW);
 
+    // blending for alpha channel
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
    //glEnable(GL_DEPTH_TEST);
 
     glfwSwapInterval(1);
@@ -45,47 +49,32 @@ int main(void)
 
 
 
-    // MESHES AND VAOS
+    // MESHES AND VAOS ---------------------------------------
     
-    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(360, 180, 1, 1.0, 1.0);
+    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(10, 10, 5, 1.0, 5.0);
 
-    SphericalGraphicsMesh* mesh = mesh_builder.GetSurfaceMesh();
+    SphericalGraphicsMesh* surface_mesh = mesh_builder.GetSurfaceMesh();
+    SphericalGraphicsMesh* athmospheric_mesh = mesh_builder.GetAthmosphericMesh();
 
-    PrintSphericalGraphicsMesh(mesh);
+    //PrintSphericalGraphicsMesh(surface_mesh);
+    //PrintSphericalGraphicsMesh(athmospheric_mesh);
 
-    float man_pos[15] = { 0.0, 0.0, 0.5,
-                            0.0, 1.0, 0.0,
-                            0.866025, -0.500000, -0.000000,
-                            -0.866025, -0.500000, -0.000000,
-                            0.0, 0.0, -1.0, };
+    float* surface_positions = surface_mesh->vertex_buffer;
+    unsigned int* surface_indices = surface_mesh->index_buffer;
 
-    unsigned int man_ind[18] = { 0, 2, 1,
-                                0, 3, 2,
-                                0, 1, 3,
-                                4, 1, 2,
-                                4, 2, 3,
-                                4, 3, 1 };
-
-    float* positions = mesh->vertex_buffer;
-    unsigned int* indices = mesh->index_buffer;
-
-    //float* positions = man_pos;
-    //unsigned int* indices = man_ind;
-
-    unsigned int index_count = mesh->index_buffer_count;
-
-    
+    float* athmospheric_positions = athmospheric_mesh->vertex_buffer;
+    unsigned int* athmospheric_indices = athmospheric_mesh->index_buffer;
 
     // create VAO
-    unsigned int vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    unsigned int surface_vao;
+    glGenVertexArrays(1, &surface_vao);
+    glBindVertexArray(surface_vao);
 
     // vertex buffer
     unsigned int vertexBuffer; // buffer id
     glGenBuffers(1, &vertexBuffer); // generate the actual buffer in memory
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer); // tell opengl how to handle stride and how to navigate data
-    glBufferData(GL_ARRAY_BUFFER, mesh->vertex_buffer_size, positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
+    glBufferData(GL_ARRAY_BUFFER, surface_mesh->vertex_buffer_size, surface_positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
     //glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
 
 
@@ -96,12 +85,38 @@ int main(void)
     unsigned int indexBuffer;
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); // because this is an index buffer we must bind it differently
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->index_buffer_size, indices, GL_STATIC_DRAW); // same when adding data
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, surface_mesh->index_buffer_size, surface_indices, GL_STATIC_DRAW); // same when adding data
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // same when adding data
 
+    glBindVertexArray(0); // unbind vao
 
 
-    // creating shaders
+    // Same for athmospheric mesh ---------------------------------------
+
+    unsigned int athmospheric_vao;
+    glGenVertexArrays(1, &athmospheric_vao);
+    glBindVertexArray(athmospheric_vao);
+
+    // vertex buffer
+    unsigned int athmospheric_vertexBuffer; // buffer id
+    glGenBuffers(1, &athmospheric_vertexBuffer); // generate the actual buffer in memory
+    glBindBuffer(GL_ARRAY_BUFFER, athmospheric_vertexBuffer); // tell opengl how to handle stride and how to navigate data
+    glBufferData(GL_ARRAY_BUFFER, athmospheric_mesh->vertex_buffer_size, athmospheric_positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
+
+    glEnableVertexAttribArray(0); // enable position attributes of our vertices
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0); // tell opengl how to read this attribute
+
+    // index buffer
+    unsigned int athmospheric_indexBuffer;
+    glGenBuffers(1, &athmospheric_indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, athmospheric_indexBuffer); // because this is an index buffer we must bind it differently
+
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, athmospheric_mesh->index_buffer_size, athmospheric_indices, GL_STATIC_DRAW); // same when adding data
+
+    glBindVertexArray(0); // unbind vao
+
+
+    // creating shaders --------------------------------------
 
     // get source code
     char* vertexShaderSource = ParseShader("res/shaders/vertex-shader.vert");
@@ -119,14 +134,15 @@ int main(void)
     unsigned int program = CreateProgram(vertexShader, fragmentShader);
 
     glUseProgram(program);
-    // Uniforms
+
+    // Uniforms ----------------------------------------------
+
+    // Universal Matrix Uniform
 
     TransformationModule TM = TransformationModule();
 
     TM.SetScale(glm::vec3(0.3, 0.3, 0.3));
     TM.SetCoordinates(glm::vec3(0.0, 0.0, 0.0));
-
-
 
     glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
 
@@ -137,16 +153,20 @@ int main(void)
     float dt = 0.005;
     float t = 0;
 
+    // Color Uniform
+
+    int color_uniform = glGetUniformLocation(program, "u_color");
+    glUniform4f(color_uniform, 0.0, 0.0, 0.0, 1.0);
+
     // Loop until the user closes the window 
     while (!glfwWindowShouldClose(window))
     {
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
-        //glDrawElements(GL_TRIANGLES, sizeof(indices)/4, GL_UNSIGNED_INT, nullptr);
+
+        // Transformations
 
         t += ((t + dt) > (2 * PI)) ? dt - (2 * PI) : dt;
-
-        //printf("%f\n", t);
 
         TM.Rotate(glm::vec3(0.01, 0.01, 0.01));
         TM.Scale(glm::vec3(0, 0, 0));
@@ -156,7 +176,14 @@ int main(void)
 
         glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
-        glDrawElements(GL_TRIANGLES, mesh->index_buffer_count* N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
+
+        glUniform4f(color_uniform, 1.0, 1.0, 0.0, 1.0);
+        glBindVertexArray(surface_vao);
+        glDrawElements(GL_TRIANGLES, surface_mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
+
+        glUniform4f(color_uniform, 0.0, 1.0, 1.0, 0.1);
+        glBindVertexArray(athmospheric_vao);
+        glDrawElements(GL_TRIANGLES, athmospheric_mesh->index_buffer_count* N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
@@ -207,11 +234,16 @@ static char* ParseShader(const char* filepath)
     long size = ftell(file); // and this figures out the size of the file using that new poiunter given the file data
 
     char* fileAsString = (char*)malloc(size + 1);
+    if (fileAsString == 0)
+    {
+		printf("Error allocating memory for file string.");
+		exit(1);
+	}
 
     fseek(file, 0, SEEK_SET); // reset file stream pointer
-    fread(fileAsString, 1, size, file); // places size number of char-sized memory from file into where: places file into where
+    fread(fileAsString, 1, size, file); // places size number of char-sized memory from file into where: places file into where. warning is missunderstanding
 
-    fileAsString[size] = 0;
+    fileAsString[size] = 0; // null terminate string
 
     fclose(file);
 
@@ -221,6 +253,11 @@ static char* ParseShader(const char* filepath)
 static unsigned int CompileShader(unsigned int type, char* sourceCode)
 {
     unsigned int shader = glCreateShader(type); // create shader object of given type
+    if (shader == 0)
+    {
+		printf("Error creating shader object. GL ErrorNo: %d\n\n", glGetError());
+		exit(1);
+	}
     glShaderSource(shader, 1, &sourceCode, NULL);
     glCompileShader(shader);
 
@@ -240,6 +277,12 @@ static unsigned int CompileShader(unsigned int type, char* sourceCode)
 static unsigned int CreateProgram(unsigned int vertexShader, unsigned int fragmentShader)
 {
     unsigned int program = glCreateProgram(); // create program object to which shaders can be attached
+
+    if (program == 0)
+    {
+		printf("Error creating program object. GL ErrorNo: %d\n\n", glGetError());
+		exit(1);
+	}
 
     glAttachShader(program, vertexShader); // attach
     glAttachShader(program, fragmentShader);
@@ -273,6 +316,10 @@ static unsigned int CreateProgram(unsigned int vertexShader, unsigned int fragme
     {
         int max_length = 200;
         char* log = (char*)malloc(max_length);
+        if (log == 0) {
+            printf("Error allocating memory for log string: program compilation error also occured.");
+			exit(1);
+        }
         int length;
 
         glGetProgramInfoLog(program, max_length, &length, log);
