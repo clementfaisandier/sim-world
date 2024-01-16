@@ -24,6 +24,7 @@
     <ClCompile Include="src\transformation-module.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\compute-shader.comp" />
     <None Include="res\shaders\fragment-shader.frag" />
     <None Include="res\shaders\vertex-shader.vert" />
   </ItemGroup>

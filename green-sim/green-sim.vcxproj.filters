@@ -13,5 +13,6 @@
   <ItemGroup>
     <None Include="res\shaders\fragment-shader.frag" />
     <None Include="res\shaders\vertex-shader.vert" />
+    <None Include="res\shaders\compute-shader.comp" />
   </ItemGroup>
 </Project>

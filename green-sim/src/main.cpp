@@ -41,7 +41,7 @@ int main(void)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-   //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     glfwSwapInterval(1);
 
@@ -50,8 +50,14 @@ int main(void)
 
 
     // MESHES AND VAOS ---------------------------------------
+
+    int lon = 90;
+    int lat = 45;
+    int layers = 10;
+    int scale_min = 1.0;
+    int scale_max = 2.0;
     
-    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(10, 10, 5, 1.0, 5.0);
+    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(lon, lat, layers, scale_min, scale_max);
 
     SphericalGraphicsMesh* surface_mesh = mesh_builder.GetSurfaceMesh();
     SphericalGraphicsMesh* athmospheric_mesh = mesh_builder.GetAthmosphericMesh();
@@ -117,6 +123,14 @@ int main(void)
 
 
     // creating shaders --------------------------------------
+    /*
+    char* computeShaderSource = ParseShader("res/shaders/compute-shader.comp");
+
+    int computeShader = CompileShader(GL_COMPUTE_SHADER, computeShaderSource);
+
+    free(computeShaderSource);
+
+    unsigned int computeProgram = CreateComputeProgram(computeShader);*/
 
     // get source code
     char* vertexShaderSource = ParseShader("res/shaders/vertex-shader.vert");
@@ -141,7 +155,8 @@ int main(void)
 
     TransformationModule TM = TransformationModule();
 
-    TM.SetScale(glm::vec3(0.3, 0.3, 0.3));
+    TM.SetRotation(glm::vec3(0.0, 0.0, 0.0));
+    TM.SetScale(glm::vec3(0.4, 0.4, 0.4));
     TM.SetCoordinates(glm::vec3(0.0, 0.0, 0.0));
 
     glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
@@ -158,29 +173,40 @@ int main(void)
     int color_uniform = glGetUniformLocation(program, "u_color");
     glUniform4f(color_uniform, 0.0, 0.0, 0.0, 1.0);
 
+    int object_uniform = glGetUniformLocation(program, "u_object");
+    glUniform1i(object_uniform, 0);
+
+    int dimension_uniform = glGetUniformLocation(program, "u_dimension");
+    glUniform3i(dimension_uniform, lon, lat, layers);
+
+
     // Loop until the user closes the window 
     while (!glfwWindowShouldClose(window))
     {
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
 
         // Transformations
 
         t += ((t + dt) > (2 * PI)) ? dt - (2 * PI) : dt;
 
-        TM.Rotate(glm::vec3(0.01, 0.01, 0.01));
-        TM.Scale(glm::vec3(0, 0, 0));
-        TM.SetCoordinates(glm::vec3(sinf(t)/2, cos(t)/2, 0.0));
+        //TM.Rotate(glm::vec3(0.01, 0.01, 0.01));
+        //TM.Scale(glm::vec3(0, 0, 0));
+        //TM.SetCoordinates(glm::vec3(sinf(t)/2, cos(t)/2, 0.0));
+
+        TM.SetRotation(glm::vec3(sinf(t) * glm::radians(45.0), t, 0));
 
         glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
 
         glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
-
-        glUniform4f(color_uniform, 1.0, 1.0, 0.0, 1.0);
+        glUniform1i(object_uniform, 0);
+        glUniform4f(color_uniform, 0.0, 0.0, 0.0, 0.0);
         glBindVertexArray(surface_vao);
         glDrawElements(GL_TRIANGLES, surface_mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
 
+        glUniform1i(object_uniform, 1);
         glUniform4f(color_uniform, 0.0, 1.0, 1.0, 0.1);
         glBindVertexArray(athmospheric_vao);
         glDrawElements(GL_TRIANGLES, athmospheric_mesh->index_buffer_count* N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
@@ -271,6 +297,63 @@ static unsigned int CompileShader(unsigned int type, char* sourceCode)
     }
 
     return shader;
+}
+
+static unsigned int CreateComputeProgram(unsigned int computeShader) {
+
+    unsigned int program = glCreateProgram(); // create program object to which shaders can be attached
+
+    if (program == 0)
+    {
+        printf("Error creating program object. GL ErrorNo: %d\n\n", glGetError());
+        exit(1);
+    }
+
+    glAttachShader(program, computeShader);
+
+    glLinkProgram(program);
+
+    // verify linking process
+    int result;
+    glGetProgramiv(program, GL_LINK_STATUS, &result);
+    if (result == GL_FALSE)
+    {
+        int max_length = 200;
+        char* log = (char*)malloc(max_length);
+        int length;
+
+        glGetProgramInfoLog(program, max_length, &length, log);
+
+        log[length] = 0;
+        printf("Linking Error: %s\n\n", log);
+
+        free(log);
+    }
+
+    glValidateProgram(program);
+
+    // verify validation process
+
+    glGetProgramiv(program, GL_VALIDATE_STATUS, &result);
+    if (result == GL_FALSE)
+    {
+        int max_length = 200;
+        char* log = (char*)malloc(max_length);
+        if (log == 0) {
+            printf("Error allocating memory for log string: program compilation error also occured.");
+            exit(1);
+        }
+        int length;
+
+        glGetProgramInfoLog(program, max_length, &length, log);
+
+        log[length] = 0;
+        printf("Validation Error: %s\n\n", log);
+
+        free(log);
+    }
+
+    return program;
 }
 
 // this method is going to take some shader code in string format and make the shader, then link them into a single program

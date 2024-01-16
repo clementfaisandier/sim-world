@@ -232,7 +232,7 @@ int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(float* vertex_buffer) {
 
 	for (int i = 0; i < num_layers; i++) {
 
-		float scale = scale_min + i * layer_step;
+		float scale = scale_min + 0.1 + i * layer_step;
 
 		// Define the top component vertices
 		DefineAthmosphereComponentVertices(vertex_buffer, &vbi, 0.0f, scale, 0.0f);
@@ -260,7 +260,7 @@ int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(float* vertex_buffer) {
 }
 void SphericalMeshBuilder::DefineAthmosphereComponentVertices(float* vertex_buffer, unsigned int* vbi, float x, float y, float z) {
 
-	float size = (scale_max - scale_min) / num_layers / 5;
+	float size = (scale_max - scale_min) / num_layers / 2;
 
 	vertex_buffer[(*vbi)++] = x;
 	vertex_buffer[(*vbi)++] = y;
