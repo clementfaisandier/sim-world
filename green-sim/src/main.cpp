@@ -122,30 +122,16 @@ int main(void)
     glBindVertexArray(0); // unbind vao
 
 
-    // creating shaders --------------------------------------
-    /*
-    char* computeShaderSource = ParseShader("res/shaders/compute-shader.comp");
+    // Create Program
 
-    int computeShader = CompileShader(GL_COMPUTE_SHADER, computeShaderSource);
+    ProgramBuilder pb = ProgramBuilder();
 
-    free(computeShaderSource);
-
-    unsigned int computeProgram = CreateComputeProgram(computeShader);*/
-
-    // get source code
-    char* vertexShaderSource = ParseShader("res/shaders/vertex-shader.vert");
-    char* fragmentShaderSource = ParseShader("res/shaders/fragment-shader.frag");
-
-    // compile shaders
-    unsigned int vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    unsigned int fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-
-    free(vertexShaderSource);
-    free(fragmentShaderSource);
-    //earth_tensor.~SphericalTensor();
+    pb.AddShader("res/shaders/vertex-shader.vert", GL_VERTEX_SHADER);
+    pb.AddShader("res/shaders/fragment-shader.frag", GL_FRAGMENT_SHADER);
+    pb.AddShader("res/shaders/compute-shader.comp", GL_COMPUTE_SHADER);
 
     // attach shaders
-    unsigned int program = CreateProgram(vertexShader, fragmentShader);
+    GLuint program = pb.CompileProgram();
 
     glUseProgram(program);
 
@@ -239,179 +225,4 @@ static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severi
 static void GLFWErrorCallback(int code, const char* description)
 {
     printf("GLFW Error!\nCode: %x: %s\n\n", code, description);
-}
-
-
-
-
-// returns the file as a string
-// NOTE: RETURNED STRING MUST BE DE-ALLOCATED
-static char* ParseShader(const char* filepath)
-{
-    FILE* file;
-    int error_no = fopen_s(&file, filepath, "rb");
-
-    if (error_no != 0 || file == 0) {
-        printf("Error whilst reading file: ERRNO #%d", error_no);
-        exit(error_no);
-    }
-
-    fseek(file, 0, SEEK_END); // I believe this sets the file pointer to the end of the file
-    long size = ftell(file); // and this figures out the size of the file using that new poiunter given the file data
-
-    char* fileAsString = (char*)malloc(size + 1);
-    if (fileAsString == 0)
-    {
-		printf("Error allocating memory for file string.");
-		exit(1);
-	}
-
-    fseek(file, 0, SEEK_SET); // reset file stream pointer
-    fread(fileAsString, 1, size, file); // places size number of char-sized memory from file into where: places file into where. warning is missunderstanding
-
-    fileAsString[size] = 0; // null terminate string
-
-    fclose(file);
-
-    return fileAsString;
-}
-
-static unsigned int CompileShader(unsigned int type, char* sourceCode)
-{
-    unsigned int shader = glCreateShader(type); // create shader object of given type
-    if (shader == 0)
-    {
-		printf("Error creating shader object. GL ErrorNo: %d\n\n", glGetError());
-		exit(1);
-	}
-    glShaderSource(shader, 1, &sourceCode, NULL);
-    glCompileShader(shader);
-
-    int result;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-
-    if (result == GL_FALSE)
-    {
-        std::cout << "Shader did not compile successfuly: " << (type == GL_FRAGMENT_SHADER ? "fragment" : "vertex");
-        exit(1);
-    }
-
-    return shader;
-}
-
-static unsigned int CreateComputeProgram(unsigned int computeShader) {
-
-    unsigned int program = glCreateProgram(); // create program object to which shaders can be attached
-
-    if (program == 0)
-    {
-        printf("Error creating program object. GL ErrorNo: %d\n\n", glGetError());
-        exit(1);
-    }
-
-    glAttachShader(program, computeShader);
-
-    glLinkProgram(program);
-
-    // verify linking process
-    int result;
-    glGetProgramiv(program, GL_LINK_STATUS, &result);
-    if (result == GL_FALSE)
-    {
-        int max_length = 200;
-        char* log = (char*)malloc(max_length);
-        int length;
-
-        glGetProgramInfoLog(program, max_length, &length, log);
-
-        log[length] = 0;
-        printf("Linking Error: %s\n\n", log);
-
-        free(log);
-    }
-
-    glValidateProgram(program);
-
-    // verify validation process
-
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &result);
-    if (result == GL_FALSE)
-    {
-        int max_length = 200;
-        char* log = (char*)malloc(max_length);
-        if (log == 0) {
-            printf("Error allocating memory for log string: program compilation error also occured.");
-            exit(1);
-        }
-        int length;
-
-        glGetProgramInfoLog(program, max_length, &length, log);
-
-        log[length] = 0;
-        printf("Validation Error: %s\n\n", log);
-
-        free(log);
-    }
-
-    return program;
-}
-
-// this method is going to take some shader code in string format and make the shader, then link them into a single program
-static unsigned int CreateProgram(unsigned int vertexShader, unsigned int fragmentShader)
-{
-    unsigned int program = glCreateProgram(); // create program object to which shaders can be attached
-
-    if (program == 0)
-    {
-		printf("Error creating program object. GL ErrorNo: %d\n\n", glGetError());
-		exit(1);
-	}
-
-    glAttachShader(program, vertexShader); // attach
-    glAttachShader(program, fragmentShader);
-
-    // linking process
-    glLinkProgram(program);
-
-    // verify linking process
-    int result;
-    glGetProgramiv(program, GL_LINK_STATUS, &result);
-    if (result == GL_FALSE)
-    {
-        int max_length = 200;
-        char* log = (char*)malloc(max_length);
-        int length;
-
-        glGetProgramInfoLog(program, max_length, &length, log);
-
-        log[length] = 0;
-        printf("Linking Error: %s\n\n", log);
-
-        free(log);
-    }
-
-    glValidateProgram(program);
-
-    // verify validation process
-
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &result);
-    if (result == GL_FALSE)
-    {
-        int max_length = 200;
-        char* log = (char*)malloc(max_length);
-        if (log == 0) {
-            printf("Error allocating memory for log string: program compilation error also occured.");
-			exit(1);
-        }
-        int length;
-
-        glGetProgramInfoLog(program, max_length, &length, log);
-
-        log[length] = 0;
-        printf("Validation Error: %s\n\n", log);
-
-        free(log);
-    }
-
-    return program;
 }

@@ -3,12 +3,15 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\transformation-module.cpp" />
-    <ClCompile Include="src\spherical-mesh-builder.cpp" />
+    <ClCompile Include="src\builders\spherical-mesh-builder.cpp" />
+    <ClCompile Include="src\builders\program-builder.cpp" />
+    <ClCompile Include="src\resource-manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformation-module.h" />
     <ClInclude Include="src\main.h" />
-    <ClInclude Include="src\spherical-mesh-builder.h" />
+    <ClInclude Include="src\builders\spherical-mesh-builder.h" />
+    <ClInclude Include="src\builders\program-builder.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\fragment-shader.frag" />
