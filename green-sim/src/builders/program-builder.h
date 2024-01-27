@@ -11,7 +11,7 @@ class ProgramBuilder {
 
 public:
 	ProgramBuilder();
-	void AddShader(constchar* file_path, GLenum shader_type);
+	void AddShader(const char* file_path, GLenum shader_type);
 	GLuint CompileProgram();
 	
 

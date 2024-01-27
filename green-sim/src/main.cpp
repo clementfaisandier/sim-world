@@ -47,7 +47,18 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
+    // Create Program
 
+    ProgramBuilder pb = ProgramBuilder();
+
+    pb.AddShader("res/shaders/vertex-shader.vert", GL_VERTEX_SHADER);
+    pb.AddShader("res/shaders/fragment-shader.frag", GL_FRAGMENT_SHADER);
+    //pb.AddShader("res/shaders/compute-shader.comp", GL_COMPUTE_SHADER);
+
+    // attach shaders
+    GLuint program = pb.CompileProgram();
+
+    glUseProgram(program);
 
     // MESHES AND VAOS ---------------------------------------
 
@@ -94,8 +105,6 @@ int main(void)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, surface_mesh->index_buffer_size, surface_indices, GL_STATIC_DRAW); // same when adding data
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // same when adding data
 
-    glBindVertexArray(0); // unbind vao
-
 
     // Same for athmospheric mesh ---------------------------------------
 
@@ -118,22 +127,6 @@ int main(void)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, athmospheric_indexBuffer); // because this is an index buffer we must bind it differently
 
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, athmospheric_mesh->index_buffer_size, athmospheric_indices, GL_STATIC_DRAW); // same when adding data
-
-    glBindVertexArray(0); // unbind vao
-
-
-    // Create Program
-
-    ProgramBuilder pb = ProgramBuilder();
-
-    pb.AddShader("res/shaders/vertex-shader.vert", GL_VERTEX_SHADER);
-    pb.AddShader("res/shaders/fragment-shader.frag", GL_FRAGMENT_SHADER);
-    pb.AddShader("res/shaders/compute-shader.comp", GL_COMPUTE_SHADER);
-
-    // attach shaders
-    GLuint program = pb.CompileProgram();
-
-    glUseProgram(program);
 
     // Uniforms ----------------------------------------------
 

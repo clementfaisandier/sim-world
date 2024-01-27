@@ -25,6 +25,7 @@ GLuint ProgramBuilder::CompileProgram() {
 
     while (!shaders.empty()) {
         glAttachShader(program, shaders.front());
+        shaders.pop();
     }
 
     // linking process
