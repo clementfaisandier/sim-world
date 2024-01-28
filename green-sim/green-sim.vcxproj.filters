@@ -12,6 +12,9 @@
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\builders\spherical-mesh-builder.h" />
     <ClInclude Include="src\builders\program-builder.h" />
+    <ClInclude Include="src\Process.h" />
+    <ClInclude Include="src\Entity.h" />
+    <ClInclude Include="src\Attribute.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\fragment-shader.frag" />

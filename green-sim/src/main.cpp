@@ -1,49 +1,14 @@
 #include "main.h"
 
-#define PI 3.14159265358979323846
-
-
 int main(void)
 {
-    // Initialize the library
-    if (!glfwInit())
-        return -1;
 
-    glfwSetErrorCallback(GLFWErrorCallback);
+    Settings sts{};
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    GLFWwindow* window = GLFWInitialization(sts);
 
-    // Create a windowed mode window and its OpenGL context
-    GLFWwindow* window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!window)
-    {
-        glfwTerminate();
-        return -1;
-    }
+    GLInitialization(sts);
 
-    // Make the window's context the current
-    glfwMakeContextCurrent(window);
-
-    if (glewInit() != GLEW_OK)
-        std::cout << "Error!" << std::endl;
-
-    // Error output and callbacks
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(GLErrorCallback, 0);
-
-    // face culling optimization -> can lead to invisible triangles if the index buffer defines the trianges in a counter-clockwise fashion
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW);
-
-    // blending for alpha channel
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glEnable(GL_DEPTH_TEST);
-
-    glfwSwapInterval(1);
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
@@ -53,22 +18,21 @@ int main(void)
 
     pb.AddShader("res/shaders/vertex-shader.vert", GL_VERTEX_SHADER);
     pb.AddShader("res/shaders/fragment-shader.frag", GL_FRAGMENT_SHADER);
-    //pb.AddShader("res/shaders/compute-shader.comp", GL_COMPUTE_SHADER);
 
     // attach shaders
-    GLuint program = pb.CompileProgram();
+    GLuint graphics_program = pb.CompileProgram();
 
-    glUseProgram(program);
+    pb = ProgramBuilder();
+
+    pb.AddShader("res/shaders/compute-shader.comp", GL_COMPUTE_SHADER);
+
+    GLuint compute_program = pb.CompileProgram();
+
+    glUseProgram(graphics_program);
 
     // MESHES AND VAOS ---------------------------------------
-
-    int lon = 90;
-    int lat = 45;
-    int layers = 10;
-    int scale_min = 1.0;
-    int scale_max = 2.0;
     
-    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(lon, lat, layers, scale_min, scale_max);
+    SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(sts.lon, sts.lat, sts.layers, sts.scale_min, sts.scale_max);
 
     SphericalGraphicsMesh* surface_mesh = mesh_builder.GetSurfaceMesh();
     SphericalGraphicsMesh* athmospheric_mesh = mesh_builder.GetAthmosphericMesh();
@@ -140,7 +104,7 @@ int main(void)
 
     glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
 
-    int transformation_m_uniform = glGetUniformLocation(program, "translation_matrix");
+    int transformation_m_uniform = glGetUniformLocation(graphics_program, "translation_matrix");
 
     glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
@@ -149,14 +113,14 @@ int main(void)
 
     // Color Uniform
 
-    int color_uniform = glGetUniformLocation(program, "u_color");
+    int color_uniform = glGetUniformLocation(graphics_program, "u_color");
     glUniform4f(color_uniform, 0.0, 0.0, 0.0, 1.0);
 
-    int object_uniform = glGetUniformLocation(program, "u_object");
+    int object_uniform = glGetUniformLocation(graphics_program, "u_object");
     glUniform1i(object_uniform, 0);
 
-    int dimension_uniform = glGetUniformLocation(program, "u_dimension");
-    glUniform3i(dimension_uniform, lon, lat, layers);
+    int dimension_uniform = glGetUniformLocation(graphics_program, "u_dimension");
+    glUniform3i(dimension_uniform, sts.lon, sts.lat, sts.layers);
 
 
     // Loop until the user closes the window 
@@ -197,7 +161,8 @@ int main(void)
         glfwPollEvents();
     }
 
-    glDeleteProgram(program);
+    glDeleteProgram(graphics_program);
+    glDeleteProgram(compute_program);
 
     glfwTerminate();
     return 0;
@@ -215,7 +180,60 @@ static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severi
     }
     printf("OpenGL Error!\nSource: %x, type: %x, id: %d, severity: %x\nMessage: %s\n\n", source, type, id, severity, message);
 }
+
 static void GLFWErrorCallback(int code, const char* description)
 {
     printf("GLFW Error!\nCode: %x: %s\n\n", code, description);
+}
+
+static GLFWwindow* GLFWInitialization(Settings sts) {
+
+    // Initialize the library
+    if (!glfwInit()) {
+        std::cout << "Unable to initialize GLFW" << std::endl;
+        exit(-1);
+    }
+
+    glfwSetErrorCallback(GLFWErrorCallback);
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, sts.GL_version_major);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, sts.GL_version_minor);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // Create a windowed mode window and its OpenGL context
+    GLFWwindow* window = glfwCreateWindow(sts.window_width, sts.window_height, "Hello World", NULL, NULL);
+    if (!window)
+    {
+        std::cout << "Unable to start window" << std::endl;
+        glfwTerminate();
+        exit(-1);
+    }
+
+    // Make the window's context the current
+    glfwMakeContextCurrent(window);
+
+    glfwSwapInterval(1);
+
+    return window;
+
+}
+
+static void GLInitialization(Settings sts) {
+
+    if (glewInit() != GLEW_OK)
+        std::cout << "Error!" << std::endl;
+
+    // Error output and callbacks
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(GLErrorCallback, 0);
+
+    // face culling optimization -> can lead to invisible triangles if the index buffer defines the trianges in a counter-clockwise fashion
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+
+    // blending for alpha channel
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_DEPTH_TEST);
 }
