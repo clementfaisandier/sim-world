@@ -12,21 +12,57 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-    // Create Program
-
+    // Graphics Program
     ProgramBuilder pb = ProgramBuilder();
 
     pb.AddShader("res/shaders/vertex-shader.vert", GL_VERTEX_SHADER);
     pb.AddShader("res/shaders/fragment-shader.frag", GL_FRAGMENT_SHADER);
 
-    // attach shaders
     GLuint graphics_program = pb.CompileProgram();
+
+    // Compute Program
+
+    GLint gl_max_compute_group_count_x = -1;
+    GLint gl_max_compute_group_count_y = -1;
+    GLint gl_max_compute_group_count_z = -1;
+
+    GLint gl_max_compute_group_size_x = -1;
+    GLint gl_max_compute_group_size_y = -1;
+    GLint gl_max_compute_group_size_z = -1;
+
+    GLint gl_max_compute_work_group_invocations = -1;
+
+    GLint gl_max_compute_shared_memory_size = -1;
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &gl_max_compute_group_count_x);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &gl_max_compute_group_count_y);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &gl_max_compute_group_count_z);
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &gl_max_compute_group_size_x);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &gl_max_compute_group_size_y);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &gl_max_compute_group_size_z);
+    
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &gl_max_compute_work_group_invocations);
+
+    glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &gl_max_compute_shared_memory_size);
+
+    std::cout << "GL_MAX_COMPUTE_WORK_GROUP_COUNT: " << gl_max_compute_group_count_x << " " 
+        << gl_max_compute_group_count_y << " " << gl_max_compute_group_count_z << std::endl << std::endl;
+
+    std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE: " << gl_max_compute_group_size_x << " "
+        << gl_max_compute_group_size_y << " " << gl_max_compute_group_size_z << std::endl << std::endl;
+
+    std::cout << "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS: " << gl_max_compute_work_group_invocations << std::endl << std::endl;
+
+    std::cout << "GL_MAX_COMPUTE_SHARED_MEMORY_SIZE: " << gl_max_compute_shared_memory_size << std::endl << std::endl;
+
 
     pb = ProgramBuilder();
 
     pb.AddShader("res/shaders/compute-shader.comp", GL_COMPUTE_SHADER);
 
     GLuint compute_program = pb.CompileProgram();
+
 
     glUseProgram(graphics_program);
 
@@ -39,6 +75,11 @@ int main(void)
 
     //PrintSphericalGraphicsMesh(surface_mesh);
     //PrintSphericalGraphicsMesh(athmospheric_mesh);
+
+    SphericalComputeMesh* compute_mesh = mesh_builder.GetComputeMesh();
+
+    PrintSphericalComputeMesh(compute_mesh);
+
 
     float* surface_positions = surface_mesh->vertex_buffer;
     unsigned int* surface_indices = surface_mesh->index_buffer;

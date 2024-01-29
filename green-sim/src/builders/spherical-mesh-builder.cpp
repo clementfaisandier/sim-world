@@ -258,6 +258,7 @@ int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(float* vertex_buffer) {
 
 	return vbi / N_ATTR_P_VERTEX; // TODO VERIFY
 }
+
 void SphericalMeshBuilder::DefineAthmosphereComponentVertices(float* vertex_buffer, unsigned int* vbi, float x, float y, float z) {
 
 	float size = (scale_max - scale_min) / num_layers / 2;
@@ -278,7 +279,6 @@ void SphericalMeshBuilder::DefineAthmosphereComponentVertices(float* vertex_buff
 	vertex_buffer[(*vbi)++] = y;
 	vertex_buffer[(*vbi)++] = z+size;
 }
-
 
 int SphericalMeshBuilder::DefineAthmosphereIndexBuffer(unsigned int* index_buffer) {
 
@@ -336,16 +336,18 @@ int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* comput
 	unsigned int cbi = 0; // compute buffer index
 	
 	for (int i = 0; i < num_layers; i++) {
-		for (int j = 0; j < num_lat; j++) {
+
+		compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
+
+		for (int j = 1; j < num_lat-1; j++) {
 			for (int k = 0; k < num_lon; k++) {
 
-				compute_buffer[cbi++] = * new SphericalComputeMesh::Cell();
-				compute_buffer[cbi++].velocity = glm::vec3(0.0, 0.0, 0.0);
-				compute_buffer[cbi++].pressure = 0.0;
-				compute_buffer[cbi++].density = 1.0;
-				
+				compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
 			}
 		}
+
+		compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
+
 	}
 
 	return cbi;
@@ -372,5 +374,23 @@ void PrintSphericalGraphicsMesh(SphericalGraphicsMesh* mesh) {
 	printf("\n\tindex_buffer:\n");
 	for (int i = 0; i < mesh->index_buffer_count; i++) {
 		printf("\t\t%d: %u, %u, %u\n", i, mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE], mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE + 1], mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE + 2]);
+	}
+}
+
+void PrintSphericalComputeMesh(SphericalComputeMesh* mesh) {
+
+	printf("\nSphericalGraphicsMesh:\n");
+	printf("\tnum_lon: %u\n", mesh->num_lon);
+	printf("\tnum_lat: %u\n", mesh->num_lat);
+	printf("\tnum_layers: %u\n", mesh->num_layers);
+	printf("\tcompute_buffer_count: %u\n", mesh->compute_buffer_count);
+	printf("\tcompute_buffer_size: %u\n", mesh->compute_buffer_size);
+
+	printf("\n\tcompute_buffer:\n");
+	for (int i = 0; i < mesh->compute_buffer_count; i++) {
+		printf("\t\t%d: v: %f, %f, %f  p: %f  d: %f \n", i,
+			mesh->compute_buffer[i].velocity[0], mesh->compute_buffer[i].velocity[1], mesh->compute_buffer[i].velocity[2],
+			mesh->compute_buffer[i].pressure,
+			mesh->compute_buffer[i].density);
 	}
 }

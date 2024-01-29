@@ -70,7 +70,6 @@ private:
 	int DefineSurfaceVertexBuffer(float* vertex_buffer, float scale);
 	int DefineSurfaceIndexBuffer(unsigned int* index_buffer);
 
-	// No use for these right now: not implementing volumes yet, just using 
 	int DefineAthmosphereVertexBuffer(float* vertex_buffer);
 	void DefineAthmosphereComponentVertices(float* vertex_buffer, unsigned int* vbi, float x, float y, float z);
 	int DefineAthmosphereIndexBuffer(unsigned int* index_buffer); // TODO
@@ -91,3 +90,5 @@ public:
 // Pure Mesh Functions	
 
 void PrintSphericalGraphicsMesh(SphericalGraphicsMesh* mesh);
+
+void PrintSphericalComputeMesh(SphericalComputeMesh* mesh);
