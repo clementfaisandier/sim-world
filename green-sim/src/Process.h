@@ -3,23 +3,22 @@
 #include <GL/glew.h>
 #include <vector>
 
-#include "Entity.h"
-#include "Attribute.h"
+#include "GL-component.h"
 
 
 class Process {
 
 private:
 	GLuint program;
-	std::vector<Entity> entities;
+	std::vector<GLComponent> gl_components;
 
 public:
 
 	Process(GLuint program);
 	~Process();
 
-	void AddEntity(Entity entity);
-	void RemoveEntity(Entity entity);
+	void AddGLComponent(Entity entity);
+	void RemoveGLComponent(Entity entity);
 
 	void Run();
 

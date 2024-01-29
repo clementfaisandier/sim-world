@@ -47,32 +47,30 @@ int main(void)
     unsigned int* athmospheric_indices = athmospheric_mesh->index_buffer;
 
     // create VAO
-    unsigned int surface_vao;
+    GLuint surface_vao;
     glGenVertexArrays(1, &surface_vao);
     glBindVertexArray(surface_vao);
 
     // vertex buffer
-    unsigned int vertexBuffer; // buffer id
+    GLuint vertexBuffer; // buffer id
     glGenBuffers(1, &vertexBuffer); // generate the actual buffer in memory
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer); // tell opengl how to handle stride and how to navigate data
     glBufferData(GL_ARRAY_BUFFER, surface_mesh->vertex_buffer_size, surface_positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
 
 
     glEnableVertexAttribArray(0); // enable position attributes of our vertices
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0); // tell opengl how to read this attribute
 
     // index buffer
-    unsigned int indexBuffer;
+    GLuint indexBuffer;
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); // because this is an index buffer we must bind it differently
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, surface_mesh->index_buffer_size, surface_indices, GL_STATIC_DRAW); // same when adding data
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // same when adding data
 
 
     // Same for athmospheric mesh ---------------------------------------
 
-    unsigned int athmospheric_vao;
+    GLuint athmospheric_vao;
     glGenVertexArrays(1, &athmospheric_vao);
     glBindVertexArray(athmospheric_vao);
 

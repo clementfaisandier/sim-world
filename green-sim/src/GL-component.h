@@ -4,9 +4,7 @@
 
 #include <vector>
 
-#include "Attribute.h"
-
-struct Entity {
+struct GLComponent {
 
 	GLint location;
 	std::vector<Attribute> attributes;

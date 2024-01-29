@@ -31,9 +31,8 @@
     <None Include="res\shaders\vertex-shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Attribute.h" />
     <ClInclude Include="src\builders\program-builder.h" />
-    <ClInclude Include="src\Entity.h" />
+    <ClInclude Include="src\GL-component.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\builders\spherical-mesh-builder.h" />
     <ClInclude Include="src\Process.h" />
