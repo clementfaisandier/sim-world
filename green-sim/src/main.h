@@ -21,11 +21,12 @@ struct Settings {
     unsigned int window_height = 480;
 
 
-    int lon = 30;
-    int lat = 20;
+    int lon = 90;
+    int lat = 90;
     int layers = 10;
     float scale_min = 1.0;
-    float scale_max = 1.5;
+    float scale_max = 2;
+
 };
 
 static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);

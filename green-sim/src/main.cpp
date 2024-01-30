@@ -9,10 +9,9 @@ int main(void)
 
     GLInitialization(sts);
 
+    std::cout << glGetString(GL_VERSION) << std::endl << glGetString(GL_RENDERER) << std::endl;
 
-    std::cout << glGetString(GL_VERSION) << std::endl;
-
-    // Graphics Program
+    // Graphics Program ---------------------------------------
     ProgramBuilder pb = ProgramBuilder();
 
     pb.AddShader("res/shaders/vertex-shader.vert", GL_VERTEX_SHADER);
@@ -21,9 +20,7 @@ int main(void)
     GLuint graphics_program = pb.CompileProgram();
     glUseProgram(graphics_program);
 
-    // Compute Program
-
-    /*
+    // Compute Program ---------------------------------------
     GLint gl_max_compute_group_count_x = -1;
     GLint gl_max_compute_group_count_y = -1;
     GLint gl_max_compute_group_count_z = -1;
@@ -63,7 +60,7 @@ int main(void)
 
     pb.AddShader("res/shaders/compute-shader.comp", GL_COMPUTE_SHADER);
 
-    GLuint compute_program = pb.CompileProgram();*/
+    GLuint compute_program = pb.CompileProgram();
 
 
 
@@ -111,7 +108,7 @@ int main(void)
     glBindVertexArray(athmospheric_vao);
 
     // vertex buffer
-    unsigned int athmospheric_vertexBuffer; // buffer id
+    GLuint athmospheric_vertexBuffer; // buffer id
     glGenBuffers(1, &athmospheric_vertexBuffer); // generate the actual buffer in memory
     glBindBuffer(GL_ARRAY_BUFFER, athmospheric_vertexBuffer); // tell opengl how to handle stride and how to navigate data
     glBufferData(GL_ARRAY_BUFFER, athmospheric_mesh->vertex_buffer_size, athmospheric_positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
@@ -120,11 +117,30 @@ int main(void)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0); // tell opengl how to read this attribute
 
     // index buffer
-    unsigned int athmospheric_indexBuffer;
+    GLuint athmospheric_indexBuffer;
     glGenBuffers(1, &athmospheric_indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, athmospheric_indexBuffer); // because this is an index buffer we must bind it differently
 
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, athmospheric_mesh->index_buffer_size, athmospheric_indices, GL_STATIC_DRAW); // same when adding data
+
+    // Compute Mesh ---------------------------------------
+    /*
+    GLuint compute_vao;
+    glGenVertexArrays(1, &compute_vao);
+    glBindVertexArray(compute_vao);
+
+    GLuint compute_vertexBuffer[2]; // buffer id
+    glGenBuffers(2, compute_vertexBuffer); // generate the actual buffer in memory
+
+    // bind buffers, fill them with data and bind them to the right binding point for the compute shader
+    // binding points are 0 and 1 as described by glBindBufferBase
+    for (int i = 0; i < 2; i++) {
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, compute_vertexBuffer[i]);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_COPY);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, i, compute_vertexBuffer[i]);
+	}
+    */
+
 
     // Uniforms ----------------------------------------------
 

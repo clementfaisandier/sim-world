@@ -53,17 +53,17 @@ GLuint ProgramBuilder::CompileProgram() {
     glGetProgramiv(program, GL_VALIDATE_STATUS, &result);
     if (result == GL_FALSE)
     {
-        int max_length = 200;
+        int max_length = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length);
+
         char* log = (char*)malloc(max_length);
         if (log == 0) {
             printf("Error allocating memory for log string: program compilation error also occured.");
             exit(1);
         }
-        int length;
 
-        glGetProgramInfoLog(program, max_length, &length, log);
+        glGetProgramInfoLog(program, max_length, NULL, log);
 
-        log[length] = 0;
         printf("Validation Error: %s\n\n", log);
 
         free(log);
@@ -134,6 +134,20 @@ GLuint ProgramBuilder::CompileShader(const char* source_code, GLenum shader_type
             s_type = "Unsupported Shader Type?";
         }
         std::cout << "Shader did not compile successfuly: " << s_type << std::endl;
+
+        int max_length = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
+
+        char* infoLog = (char*) malloc(max_length);
+        if (infoLog == 0) {
+			printf("Error allocating memory for log string: shader compilation error also occured.");
+			exit(1);
+		}
+
+        glGetShaderInfoLog(shader, max_length, NULL, infoLog);
+
+        printf("Shader Compilation Error: %s\n\n", infoLog);
+
         exit(1);
     }
 

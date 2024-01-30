@@ -18,7 +18,7 @@ void main()
     // u_object == 0 is the surface -> use the texture color
     // u_object == 1 is the wireframe -> apply color based on location
 
-    /*
+    
     if (u_object == 0) {
         p_color = vec4(0.5, 0.2, 0.2, 1.0);
     }
@@ -47,9 +47,9 @@ void main()
         float g = cos (20 * lat / num_lat) * 0.8;
         float b =  1 - (layer / num_layer);
         float a = 0.15;
-        */
-        p_color = vec4(1, 1, 1, 0.5);
+        
+        p_color = vec4(r, g, b, a);
 
 
-    //}
+    }
 }
