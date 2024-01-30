@@ -1,9 +1,7 @@
 /*
 
-num_lon, lat, layers dictate the number of cell/vertices/volumes per mesh
-
-The current compute mesh is not an offset grid, unlike what was originally envisioned, meaning
-	the compute cells are on the vertices, not  the surfaces of the meshe.
+num_lon & num_lat represent the number of lon/lat divisions TODO: make this the num of distinct lat, for lon this is already the case
+num_layers is the number of layers
 
 
 */

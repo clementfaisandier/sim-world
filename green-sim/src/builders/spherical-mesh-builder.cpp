@@ -107,7 +107,7 @@ SphericalComputeMesh* SphericalMeshBuilder::GetComputeMesh() {
 
 	SphericalComputeMesh* mesh = (SphericalComputeMesh*)malloc(sizeof(SphericalComputeMesh));
 	if (mesh == NULL) {
-		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate mesh.\n");
+		printf("ERROR: SphericalMeshBuilder: GetComputeMesh\nUnable to allocate compute mesh object.\n");
 		exit(errno);
 	}
 
@@ -305,9 +305,9 @@ int SphericalMeshBuilder::DefineAthmosphereIndexBuffer(unsigned int* index_buffe
 		}
 
 		// Define the bottom volume
-		unsigned int volume_offset = (layer_offset + 4) + ((num_lat - 2) * num_lon * 4);
+		unsigned int volume_offset = (layer_offset + 4) + ((num_lat - 1) * num_lon * 4);
 
-		DefineAthmosphericVolume(index_buffer, &ibi, layer_offset);
+		DefineAthmosphericVolume(index_buffer, &ibi, volume_offset);
 
 	}
 	return ibi / N_VERTEX_P_PRIMITIVE;
@@ -339,7 +339,7 @@ int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* comput
 
 		compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
 
-		for (int j = 1; j < num_lat - 1; j++) {
+		for (int j = 1; j < num_lat; j++) {
 			for (int k = 0; k < num_lon; k++) {
 
 				compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };

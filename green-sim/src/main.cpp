@@ -76,10 +76,6 @@ int main(void)
 
     SphericalComputeMesh* compute_mesh = mesh_builder.GetComputeMesh();
 
-    surface_mesh->PrintMeta();
-    athmospheric_mesh->PrintMeta();
-    compute_mesh->PrintMeta();
-
     float* surface_positions = surface_mesh->vertex_buffer;
     unsigned int* surface_indices = surface_mesh->index_buffer;
 
