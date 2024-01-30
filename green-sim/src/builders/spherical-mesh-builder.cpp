@@ -24,7 +24,7 @@ SphericalMeshBuilder::SphericalMeshBuilder(unsigned int num_lon, unsigned int nu
 SphericalGraphicsMesh* SphericalMeshBuilder::GetSurfaceMesh() {
 
 	// Allocate memory for the mesh
-	SphericalGraphicsMesh* mesh  = (SphericalGraphicsMesh*) malloc(sizeof(SphericalGraphicsMesh));
+	SphericalGraphicsMesh* mesh = (SphericalGraphicsMesh*)malloc(sizeof(SphericalGraphicsMesh));
 	if (mesh == NULL) {
 		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate mesh.\n");
 		exit(errno);
@@ -39,7 +39,7 @@ SphericalGraphicsMesh* SphericalMeshBuilder::GetSurfaceMesh() {
 	mesh->vertex_buffer_count = (num_lon * (num_lat - 1) + 2);
 	mesh->index_buffer_count = (num_lon * (num_lat - 1) * 2);
 
-	mesh->vertex_buffer_size = sizeof (*mesh->vertex_buffer) * mesh->vertex_buffer_count * N_ATTR_P_VERTEX;
+	mesh->vertex_buffer_size = sizeof(*mesh->vertex_buffer) * mesh->vertex_buffer_count * N_ATTR_P_VERTEX;
 	mesh->index_buffer_size = sizeof(*mesh->index_buffer) * mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE;
 
 	// allocate vertex and index buffer
@@ -267,30 +267,30 @@ void SphericalMeshBuilder::DefineAthmosphereComponentVertices(float* vertex_buff
 	vertex_buffer[(*vbi)++] = y;
 	vertex_buffer[(*vbi)++] = z;
 
-	vertex_buffer[(*vbi)++] = x+size;
+	vertex_buffer[(*vbi)++] = x + size;
 	vertex_buffer[(*vbi)++] = y;
 	vertex_buffer[(*vbi)++] = z;
 
 	vertex_buffer[(*vbi)++] = x;
-	vertex_buffer[(*vbi)++] = y+size;
+	vertex_buffer[(*vbi)++] = y + size;
 	vertex_buffer[(*vbi)++] = z;
 
 	vertex_buffer[(*vbi)++] = x;
 	vertex_buffer[(*vbi)++] = y;
-	vertex_buffer[(*vbi)++] = z+size;
+	vertex_buffer[(*vbi)++] = z + size;
 }
 
 int SphericalMeshBuilder::DefineAthmosphereIndexBuffer(unsigned int* index_buffer) {
 
 	unsigned int ibi = 0; // index buffer index
-	
+
 	for (int i = 0; i < num_layers; i++) {
 
 		unsigned int layer_offset = i * (num_lon * (num_lat - 1) + 2) * 4;
 
 		// Define top volume
 		DefineAthmosphericVolume(index_buffer, &ibi, layer_offset);
-		
+
 
 		// Define the middle volumes
 
@@ -334,12 +334,12 @@ void SphericalMeshBuilder::DefineAthmosphericVolume(unsigned int* index_buffer, 
 int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* compute_buffer) {
 
 	unsigned int cbi = 0; // compute buffer index
-	
+
 	for (int i = 0; i < num_layers; i++) {
 
 		compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
 
-		for (int j = 1; j < num_lat-1; j++) {
+		for (int j = 1; j < num_lat - 1; j++) {
 			for (int k = 0; k < num_lon; k++) {
 
 				compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
@@ -355,42 +355,50 @@ int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* comput
 
 // Mesh Functions
 
-void PrintSphericalGraphicsMesh(SphericalGraphicsMesh* mesh) {
+void SphericalGraphicsMesh::Print() {
 
-	printf("\nSphericalGraphicsMesh:\n");
-	printf("\tnum_lon: %u\n", mesh->num_lon);
-	printf("\tnum_lat: %u\n", mesh->num_lat);
-	printf("\tnum_layers: %u\n", mesh->num_layers);
-	printf("\tvertex_buffer_count: %u\n", mesh->vertex_buffer_count);
-	printf("\tindex_buffer_count: %u\n", mesh->index_buffer_count);
-	printf("\tvertex_buffer_size: %u\n", mesh->vertex_buffer_size);
-	printf("\tindex_buffer_size: %u\n", mesh->index_buffer_size);
+	PrintMeta();
 
 	printf("\n\tvertex_buffer:\n");
-	for (int i = 0; i < mesh->vertex_buffer_count; i++) {
-		printf("\t\t%d: %f, %f, %f\n", i, mesh->vertex_buffer[i * N_ATTR_P_VERTEX], mesh->vertex_buffer[i * N_ATTR_P_VERTEX + 1], mesh->vertex_buffer[i * N_ATTR_P_VERTEX + 2]);
+	for (int i = 0; i < vertex_buffer_count; i++) {
+		printf("\t\t%d: %f, %f, %f\n", i, vertex_buffer[i * N_ATTR_P_VERTEX], vertex_buffer[i * N_ATTR_P_VERTEX + 1], vertex_buffer[i * N_ATTR_P_VERTEX + 2]);
 	}
 
 	printf("\n\tindex_buffer:\n");
-	for (int i = 0; i < mesh->index_buffer_count; i++) {
-		printf("\t\t%d: %u, %u, %u\n", i, mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE], mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE + 1], mesh->index_buffer[i * N_VERTEX_P_PRIMITIVE + 2]);
+	for (int i = 0; i < index_buffer_count; i++) {
+		printf("\t\t%d: %u, %u, %u\n", i, index_buffer[i * N_VERTEX_P_PRIMITIVE], index_buffer[i * N_VERTEX_P_PRIMITIVE + 1], index_buffer[i * N_VERTEX_P_PRIMITIVE + 2]);
 	}
 }
 
-void PrintSphericalComputeMesh(SphericalComputeMesh* mesh) {
-
+void SphericalGraphicsMesh::PrintMeta() {
 	printf("\nSphericalGraphicsMesh:\n");
-	printf("\tnum_lon: %u\n", mesh->num_lon);
-	printf("\tnum_lat: %u\n", mesh->num_lat);
-	printf("\tnum_layers: %u\n", mesh->num_layers);
-	printf("\tcompute_buffer_count: %u\n", mesh->compute_buffer_count);
-	printf("\tcompute_buffer_size: %u\n", mesh->compute_buffer_size);
+	printf("\tnum_lon: %u\n", num_lon);
+	printf("\tnum_lat: %u\n", num_lat);
+	printf("\tnum_layers: %u\n", num_layers);
+	printf("\tvertex_buffer_count: %u\n", vertex_buffer_count);
+	printf("\tindex_buffer_count: %u\n", index_buffer_count);
+	printf("\tvertex_buffer_size: %u\n", vertex_buffer_size);
+	printf("\tindex_buffer_size: %u\n", index_buffer_size);
+}
+
+void SphericalComputeMesh::Print() {
+
+	PrintMeta();
 
 	printf("\n\tcompute_buffer:\n");
-	for (int i = 0; i < mesh->compute_buffer_count; i++) {
+	for (int i = 0; i < compute_buffer_count; i++) {
 		printf("\t\t%d: v: %f, %f, %f  p: %f  d: %f \n", i,
-			mesh->compute_buffer[i].velocity[0], mesh->compute_buffer[i].velocity[1], mesh->compute_buffer[i].velocity[2],
-			mesh->compute_buffer[i].pressure,
-			mesh->compute_buffer[i].density);
+			compute_buffer[i].velocity[0], compute_buffer[i].velocity[1], compute_buffer[i].velocity[2],
+			compute_buffer[i].pressure,
+			compute_buffer[i].density);
 	}
+}
+
+void SphericalComputeMesh::PrintMeta() {
+	printf("\nSphericalGraphicsMesh:\n");
+	printf("\tnum_lon: %u\n", num_lon);
+	printf("\tnum_lat: %u\n", num_lat);
+	printf("\tnum_layers: %u\n", num_layers);
+	printf("\tcompute_buffer_count: %u\n", compute_buffer_count);
+	printf("\tcompute_buffer_size: %u\n", compute_buffer_size);
 }

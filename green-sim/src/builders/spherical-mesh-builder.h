@@ -1,3 +1,16 @@
+/*
+
+num_lon, lat, layers dictate the number of cell/vertices/volumes per mesh
+
+The current compute mesh is not an offset grid, unlike what was originally envisioned, meaning
+	the compute cells are on the vertices, not  the surfaces of the meshe.
+
+
+*/
+
+
+
+
 #pragma once
 
 #include <iostream>
@@ -7,8 +20,12 @@
 #define N_ATTR_P_VERTEX 3
 #define N_VERTEX_P_PRIMITIVE 3
 
+
+// Meshes and mesh Functions	
+
 typedef struct SphericalGraphicsMesh {
 
+	// NOTE: for the future, it would be clearer to store vertices and indices as lists of vec3
 	float* vertex_buffer = nullptr;
 	unsigned int* index_buffer = nullptr;
 
@@ -21,6 +38,9 @@ typedef struct SphericalGraphicsMesh {
 	unsigned int num_lon = 0;
 	unsigned int num_lat = 0;
 	unsigned int num_layers = 0;
+
+	void Print();
+	void PrintMeta();
 };
 
 typedef struct SphericalComputeMesh {
@@ -40,9 +60,21 @@ typedef struct SphericalComputeMesh {
 	unsigned int num_lon = 0;
 	unsigned int num_lat = 0;
 	unsigned int num_layers = 0;
+
+	void Print();
+	void PrintMeta();
 };
 
 class SphericalMeshBuilder {
+
+public:
+
+	SphericalMeshBuilder(unsigned int num_lon, unsigned int num_lat, unsigned int num_layers, float scale_min, float scale_max);
+
+	SphericalGraphicsMesh* GetSurfaceMesh();
+	SphericalGraphicsMesh* GetAthmosphericMesh();
+
+	SphericalComputeMesh* GetComputeMesh();
 
 private:
 
@@ -72,23 +104,10 @@ private:
 
 	int DefineAthmosphereVertexBuffer(float* vertex_buffer);
 	void DefineAthmosphereComponentVertices(float* vertex_buffer, unsigned int* vbi, float x, float y, float z);
-	int DefineAthmosphereIndexBuffer(unsigned int* index_buffer); // TODO
+	int DefineAthmosphereIndexBuffer(unsigned int* index_buffer);
 	void DefineAthmosphericVolume(unsigned int* index_buffer, unsigned int* ibi, unsigned int layer_offset);
 
 	int DefineComputeBuffer(SphericalComputeMesh::Cell* compute_buffer);
 
-public:
 
-	SphericalMeshBuilder(unsigned int num_lon, unsigned int num_lat, unsigned int num_layers, float scale_min, float scale_max);
-
-	SphericalGraphicsMesh* GetSurfaceMesh();
-	SphericalGraphicsMesh* GetAthmosphericMesh();
-	
-	SphericalComputeMesh* GetComputeMesh();
 };
-
-// Pure Mesh Functions	
-
-void PrintSphericalGraphicsMesh(SphericalGraphicsMesh* mesh);
-
-void PrintSphericalComputeMesh(SphericalComputeMesh* mesh);

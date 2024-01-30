@@ -19,9 +19,11 @@ int main(void)
     pb.AddShader("res/shaders/fragment-shader.frag", GL_FRAGMENT_SHADER);
 
     GLuint graphics_program = pb.CompileProgram();
+    glUseProgram(graphics_program);
 
     // Compute Program
 
+    /*
     GLint gl_max_compute_group_count_x = -1;
     GLint gl_max_compute_group_count_y = -1;
     GLint gl_max_compute_group_count_z = -1;
@@ -61,10 +63,9 @@ int main(void)
 
     pb.AddShader("res/shaders/compute-shader.comp", GL_COMPUTE_SHADER);
 
-    GLuint compute_program = pb.CompileProgram();
+    GLuint compute_program = pb.CompileProgram();*/
 
 
-    glUseProgram(graphics_program);
 
     // MESHES AND VAOS ---------------------------------------
     
@@ -73,13 +74,11 @@ int main(void)
     SphericalGraphicsMesh* surface_mesh = mesh_builder.GetSurfaceMesh();
     SphericalGraphicsMesh* athmospheric_mesh = mesh_builder.GetAthmosphericMesh();
 
-    //PrintSphericalGraphicsMesh(surface_mesh);
-    //PrintSphericalGraphicsMesh(athmospheric_mesh);
-
     SphericalComputeMesh* compute_mesh = mesh_builder.GetComputeMesh();
 
-    PrintSphericalComputeMesh(compute_mesh);
-
+    surface_mesh->PrintMeta();
+    athmospheric_mesh->PrintMeta();
+    compute_mesh->PrintMeta();
 
     float* surface_positions = surface_mesh->vertex_buffer;
     unsigned int* surface_indices = surface_mesh->index_buffer;
@@ -201,7 +200,7 @@ int main(void)
     }
 
     glDeleteProgram(graphics_program);
-    glDeleteProgram(compute_program);
+    //glDeleteProgram(compute_program);
 
     glfwTerminate();
     return 0;
