@@ -21,40 +21,41 @@ int main(void)
     glUseProgram(graphics_program);
 
     // Compute Program ---------------------------------------
-    GLint gl_max_compute_group_count_x = -1;
-    GLint gl_max_compute_group_count_y = -1;
-    GLint gl_max_compute_group_count_z = -1;
+    {
+        GLint gl_max_compute_group_count_x = -1;
+        GLint gl_max_compute_group_count_y = -1;
+        GLint gl_max_compute_group_count_z = -1;
 
-    GLint gl_max_compute_group_size_x = -1;
-    GLint gl_max_compute_group_size_y = -1;
-    GLint gl_max_compute_group_size_z = -1;
+        GLint gl_max_compute_group_size_x = -1;
+        GLint gl_max_compute_group_size_y = -1;
+        GLint gl_max_compute_group_size_z = -1;
 
-    GLint gl_max_compute_work_group_invocations = -1;
+        GLint gl_max_compute_work_group_invocations = -1;
 
-    GLint gl_max_compute_shared_memory_size = -1;
+        GLint gl_max_compute_shared_memory_size = -1;
 
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &gl_max_compute_group_count_x);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &gl_max_compute_group_count_y);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &gl_max_compute_group_count_z);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &gl_max_compute_group_count_x);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &gl_max_compute_group_count_y);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &gl_max_compute_group_count_z);
 
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &gl_max_compute_group_size_x);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &gl_max_compute_group_size_y);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &gl_max_compute_group_size_z);
-    
-    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &gl_max_compute_work_group_invocations);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &gl_max_compute_group_size_x);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &gl_max_compute_group_size_y);
+        glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &gl_max_compute_group_size_z);
 
-    glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &gl_max_compute_shared_memory_size);
+        glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &gl_max_compute_work_group_invocations);
 
-    std::cout << "GL_MAX_COMPUTE_WORK_GROUP_COUNT: " << gl_max_compute_group_count_x << " " 
-        << gl_max_compute_group_count_y << " " << gl_max_compute_group_count_z << std::endl << std::endl;
+        glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &gl_max_compute_shared_memory_size);
 
-    std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE: " << gl_max_compute_group_size_x << " "
-        << gl_max_compute_group_size_y << " " << gl_max_compute_group_size_z << std::endl << std::endl;
+        std::cout << "GL_MAX_COMPUTE_WORK_GROUP_COUNT: " << gl_max_compute_group_count_x << " "
+            << gl_max_compute_group_count_y << " " << gl_max_compute_group_count_z << std::endl << std::endl;
 
-    std::cout << "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS: " << gl_max_compute_work_group_invocations << std::endl << std::endl;
+        std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE: " << gl_max_compute_group_size_x << " "
+            << gl_max_compute_group_size_y << " " << gl_max_compute_group_size_z << std::endl << std::endl;
 
-    std::cout << "GL_MAX_COMPUTE_SHARED_MEMORY_SIZE: " << gl_max_compute_shared_memory_size << std::endl << std::endl;
+        std::cout << "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS: " << gl_max_compute_work_group_invocations << std::endl << std::endl;
 
+        std::cout << "GL_MAX_COMPUTE_SHARED_MEMORY_SIZE: " << gl_max_compute_shared_memory_size << std::endl << std::endl;
+    }
 
     pb = ProgramBuilder();
 
