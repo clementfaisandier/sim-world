@@ -1,7 +1,7 @@
 ﻿#version 430
 layout(local_size_x = 1, local_size_y = 1) in;
 
-buffer sim_data {
+layout(binding = 1, packed) buffer SimData {
 	struct {
 		vec3 velocity;
 		float pressure;
@@ -10,12 +10,17 @@ buffer sim_data {
 };
 
 
-buffer vertex_color {
+layout(binding = 2, packed) buffer VertexColor {
 	vec4 color[];
 };
 
 void main() {
-    uint index = gl_GlobalInvocationID.x;
+    uint comp_index = gl_GlobalInvocationID.x;
+	uint color_index = comp_index;
 
-	color[index] = vec4(cells[index].density);
+	for (int i = 0; i < 4; i++) {
+		
+		color_index = comp_index * 4 + i;
+		color[color_index] = vec4(cells[comp_index].density, cells[comp_index].pressure,0, 0.3);
+	}
 }

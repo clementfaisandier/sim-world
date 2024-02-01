@@ -21,9 +21,9 @@ struct Settings {
     unsigned int window_height = 480;
 
 
-    int lon = 4;
-    int lat = 4;
-    int layers = 1;
+    int lon = 44;
+    int lat = 44;
+    int layers = 3;
     float scale_min = 1.0;
     float scale_max = 2;
 

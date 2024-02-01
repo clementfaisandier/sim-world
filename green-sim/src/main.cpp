@@ -73,6 +73,7 @@ int main(void)
     SphericalGraphicsMesh* athmospheric_mesh = mesh_builder.GetAthmosphericMesh();
 
     SphericalComputeMesh* compute_mesh = mesh_builder.GetComputeMesh();
+    compute_mesh->Print();
 
     glm::vec3* surface_positions = surface_mesh->vertex_buffer;
     glm::vec4* surface_colors = surface_mesh->color_buffer;
@@ -86,6 +87,14 @@ int main(void)
 
 
     // Surface Mesh VAO ---------------------------------------
+    // 
+    // NOTE: VAO contain VERTEX_ATTRIB_ARRY_BUFFER_BINDING points (and more ofc), which reference the actual buffer objects.
+    // 
+    // Because my buffers are not interweaved => each vertex attribute will have a continuous buffer bound to it.
+    // 
+    // Meaning: Vertex attribute state should reflect the packed buffer => stride = 0, offset = 0.
+    // 
+    // 
     // create VAO
     GLuint surface_vao;
     glGenVertexArrays(1, &surface_vao);
@@ -157,7 +166,8 @@ int main(void)
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, compute_buffer);
     glNamedBufferData(compute_buffer, compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_DRAW); // note: GL_DYNAMIC_DRAW may be the correct option
 
-    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compute_buffer); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 1
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, athmospheric_colorBuffer); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 2
 
 
 
@@ -200,6 +210,8 @@ int main(void)
         // Compute Shader
         glUseProgram(compute_program);
         glDispatchCompute(compute_mesh->compute_buffer_count, 1, 1);
+
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
         glUseProgram(graphics_program);
 

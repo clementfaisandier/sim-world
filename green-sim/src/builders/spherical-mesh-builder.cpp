@@ -387,8 +387,9 @@ int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* comput
 			for (int k = 0; k < num_lon; k++) {
 
 				float density = (float)k / (float)num_lon;
+				float pressure = (float)j / (float)num_lat;
 
-				compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, density };
+				compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), pressure, density };
 			}
 		}
 
