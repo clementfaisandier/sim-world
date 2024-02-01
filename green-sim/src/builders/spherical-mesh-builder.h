@@ -13,9 +13,9 @@ num_layers is the number of layers
 
 #include <iostream>
 #include "glm/vec3.hpp"
+#include "glm/vec4.hpp"
 #include "glm/trigonometric.hpp"
 
-#define N_ATTR_P_VERTEX 3
 #define N_VERTEX_P_PRIMITIVE 3
 
 
@@ -23,14 +23,16 @@ num_layers is the number of layers
 
 typedef struct SphericalGraphicsMesh {
 
-	// NOTE: for the future, it would be clearer to store vertices and indices as lists of vec3
-	float* vertex_buffer = nullptr;
+	glm::vec3* vertex_buffer = nullptr;
+	glm::vec4* color_buffer = nullptr;
 	unsigned int* index_buffer = nullptr;
 
 	unsigned int vertex_buffer_size = 0;
+	unsigned int color_buffer_size = 0;
 	unsigned int index_buffer_size = 0;
 
 	unsigned int vertex_buffer_count = 0;
+	unsigned int color_buffer_count = 0;
 	unsigned int index_buffer_count = 0; // num primitive draw calls
 
 	unsigned int num_lon = 0;
@@ -97,11 +99,16 @@ private:
 	* or
 	*	(int) number of primitives defined
 	*/
-	int DefineSurfaceVertexBuffer(float* vertex_buffer, float scale);
+	int DefineSurfaceVertexBuffer(glm::vec3* vertex_buffer, float scale);
+	int DefineSurfaceColorBuffer(glm::vec4* color_buffer);
 	int DefineSurfaceIndexBuffer(unsigned int* index_buffer);
 
-	int DefineAthmosphereVertexBuffer(float* vertex_buffer);
-	void DefineAthmosphereComponentVertices(float* vertex_buffer, unsigned int* vbi, float x, float y, float z);
+	int DefineAthmosphereVertexBuffer(glm::vec3* vertex_buffer);
+	void DefineAthmosphereComponentVertices(glm::vec3* vertex_buffer, unsigned int* vbi, float x, float y, float z);
+
+	int DefineAthmosphereColorBuffer(glm::vec4* color_buffer);
+	void DefineAthmosphereComponentColors(glm::vec4* color_buffer, unsigned int* cbi);
+
 	int DefineAthmosphereIndexBuffer(unsigned int* index_buffer);
 	void DefineAthmosphericVolume(unsigned int* index_buffer, unsigned int* ibi, unsigned int layer_offset);
 

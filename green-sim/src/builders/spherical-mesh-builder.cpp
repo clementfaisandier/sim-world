@@ -37,24 +37,30 @@ SphericalGraphicsMesh* SphericalMeshBuilder::GetSurfaceMesh() {
 	mesh->num_layers = 1;
 
 	mesh->vertex_buffer_count = (num_lon * (num_lat - 1) + 2);
+	mesh->color_buffer_count = (num_lon * (num_lat - 1) + 2);
 	mesh->index_buffer_count = (num_lon * (num_lat - 1) * 2);
 
-	mesh->vertex_buffer_size = sizeof(*mesh->vertex_buffer) * mesh->vertex_buffer_count * N_ATTR_P_VERTEX;
+	mesh->vertex_buffer_size = sizeof(*mesh->vertex_buffer) * mesh->vertex_buffer_count;
+	mesh->color_buffer_size = sizeof(*mesh->color_buffer) * mesh->color_buffer_count;
 	mesh->index_buffer_size = sizeof(*mesh->index_buffer) * mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE;
 
 	// allocate vertex and index buffer
 
-	mesh->vertex_buffer = (float*)malloc(mesh->vertex_buffer_size);
+	mesh->vertex_buffer = (glm::vec3*)malloc(mesh->vertex_buffer_size);
+	mesh->color_buffer = (glm::vec4*)malloc(mesh->color_buffer_size);
 	mesh->index_buffer = (unsigned int*)malloc(mesh->index_buffer_size);
 
-	if (mesh->vertex_buffer == NULL || mesh->index_buffer == NULL) {
-		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate vertex/index buffer.\nVB: %u, IB: %u\n", &mesh->vertex_buffer, &mesh->index_buffer);
+	if (mesh->vertex_buffer == NULL || mesh->index_buffer == NULL || mesh->color_buffer == NULL) {
+		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate vertex/color/index buffer.\nVB: %u, CB: %u, IB: %u\n", &mesh->vertex_buffer, &mesh->color_buffer, &mesh->index_buffer);
 		exit(errno);
 	}
 
 	// define vertex and index buffer	
 
+	// could compare these returns with the count to verify the correct number of vertices and indices are defined
+	// TODO: verify the return values OR should this be a unit test?
 	DefineSurfaceVertexBuffer(mesh->vertex_buffer, scale_min);
+	DefineSurfaceColorBuffer(mesh->color_buffer);
 	DefineSurfaceIndexBuffer(mesh->index_buffer);
 
 	return mesh;
@@ -78,24 +84,30 @@ SphericalGraphicsMesh* SphericalMeshBuilder::GetAthmosphericMesh() {
 	unsigned int vertex_count_per_layer = (num_lon * (num_lat - 1) + 2) * 4;
 	unsigned int index_count_per_layer = (num_lon * (num_lat - 1) + 2) * 4;
 	mesh->vertex_buffer_count = vertex_count_per_layer * num_layers;
+	mesh->color_buffer_count = vertex_count_per_layer * num_layers;
 	mesh->index_buffer_count = index_count_per_layer * num_layers;
 
-	mesh->vertex_buffer_size = sizeof(*mesh->vertex_buffer) * mesh->vertex_buffer_count * N_ATTR_P_VERTEX;
+	mesh->vertex_buffer_size = sizeof(*mesh->vertex_buffer) * mesh->vertex_buffer_count;
+	mesh->color_buffer_size = sizeof(*mesh->color_buffer) * mesh->color_buffer_count;
 	mesh->index_buffer_size = sizeof(*mesh->index_buffer) * mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE;
 
 	// allocate vertex and index buffer
 
-	mesh->vertex_buffer = (float*)malloc(mesh->vertex_buffer_size);
+	mesh->vertex_buffer = (glm::vec3*)malloc(mesh->vertex_buffer_size);
+	mesh->color_buffer = (glm::vec4*)malloc(mesh->color_buffer_size);
 	mesh->index_buffer = (unsigned int*)malloc(mesh->index_buffer_size);
 
-	if (mesh->vertex_buffer == NULL || mesh->index_buffer == NULL) {
-		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate vertex/index buffer.\nVB: %u, IB: %u\n", &mesh->vertex_buffer, &mesh->index_buffer);
+	if (mesh->vertex_buffer == NULL || mesh->index_buffer == NULL || mesh->color_buffer == NULL) {
+		printf("ERROR: SphericalMeshBuilder: InitFields\nUnable to allocate vertex/color/index buffer.\nVB: %u, CB: %u, IB: %u\n", &mesh->vertex_buffer, &mesh->color_buffer, &mesh->index_buffer);
 		exit(errno);
 	}
 
 	// define vertex and index buffer	
 
+	// could compare these returns with the count to verify the correct number of vertices and indices are defined
+	// TODO: verify the return values OR should this be a unit test?
 	DefineAthmosphereVertexBuffer(mesh->vertex_buffer);
+	DefineAthmosphereColorBuffer(mesh->color_buffer);
 	DefineAthmosphereIndexBuffer(mesh->index_buffer);
 
 	return mesh;
@@ -140,14 +152,12 @@ SphericalComputeMesh* SphericalMeshBuilder::GetComputeMesh() {
 
 // PRIVATE
 
-int SphericalMeshBuilder::DefineSurfaceVertexBuffer(float* vertex_buffer, float scale) {
+int SphericalMeshBuilder::DefineSurfaceVertexBuffer(glm::vec3* vertex_buffer, float scale) {
 
 	unsigned int vbi = 0; // vertex buffer index
 
 	// Define the top vertex
-	vertex_buffer[vbi++] = 0.0f;
-	vertex_buffer[vbi++] = scale;
-	vertex_buffer[vbi++] = 0.0f;
+	vertex_buffer[vbi++] = glm::vec3(0.0f, scale, 0.0f);
 
 	// Define middle vertices
 	for (int i = 1; i < num_lat; i++) {
@@ -160,18 +170,36 @@ int SphericalMeshBuilder::DefineSurfaceVertexBuffer(float* vertex_buffer, float 
 			float y = scale * cos(lat);
 			float z = scale * sin(lat) * sin(lon);
 
-			vertex_buffer[vbi++] = x;
-			vertex_buffer[vbi++] = y;
-			vertex_buffer[vbi++] = z;
+			vertex_buffer[vbi++] = glm::vec3(x, y, z);
 		}
 	}
 
 	// Define the bottom vertex
-	vertex_buffer[vbi++] = 0.0f;
-	vertex_buffer[vbi++] = -scale;
-	vertex_buffer[vbi++] = 0.0f;
+	vertex_buffer[vbi++] = glm::vec3(0.0f, -scale, 0.0f);
 
-	return vbi / N_ATTR_P_VERTEX; // TODO VERIFY
+
+	return vbi;
+}
+
+int SphericalMeshBuilder::DefineSurfaceColorBuffer(glm::vec4* color_buffer) {
+
+	unsigned int cbi = 0; // color buffer index
+
+	glm::vec4 static_color = glm::vec4(0.5, 0.2, 0.2, 1.0);
+
+	// Define the top vertex
+	color_buffer[cbi++] = static_color;
+
+	// Define middle vertices
+	for (int i = 0; i < (num_lat - 1) * num_lon; i++) {
+
+		color_buffer[cbi++] = static_color;
+	}
+
+	// Define the bottom vertex
+	color_buffer[cbi++] = static_color;
+
+	return cbi;
 }
 
 int SphericalMeshBuilder::DefineSurfaceIndexBuffer(unsigned int* index_buffer) {
@@ -226,7 +254,7 @@ int SphericalMeshBuilder::DefineSurfaceIndexBuffer(unsigned int* index_buffer) {
 	return ibi / N_VERTEX_P_PRIMITIVE;
 }
 
-int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(float* vertex_buffer) {
+int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(glm::vec3* vertex_buffer) {
 
 	unsigned int vbi = 0; // vertex buffer index
 
@@ -256,28 +284,44 @@ int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(float* vertex_buffer) {
 		DefineAthmosphereComponentVertices(vertex_buffer, &vbi, 0.0f, -scale, 0.0f);
 	}
 
-	return vbi / N_ATTR_P_VERTEX; // TODO VERIFY
+	return vbi; // TODO VERIFY
 }
 
-void SphericalMeshBuilder::DefineAthmosphereComponentVertices(float* vertex_buffer, unsigned int* vbi, float x, float y, float z) {
+void SphericalMeshBuilder::DefineAthmosphereComponentVertices(glm::vec3* vertex_buffer, unsigned int* vbi, float x, float y, float z) {
 
 	float size = (scale_max - scale_min) / num_layers / 2;
 
-	vertex_buffer[(*vbi)++] = x;
-	vertex_buffer[(*vbi)++] = y;
-	vertex_buffer[(*vbi)++] = z;
+	vertex_buffer[(*vbi)++] = glm::vec3(x, y, z);
 
-	vertex_buffer[(*vbi)++] = x + size;
-	vertex_buffer[(*vbi)++] = y;
-	vertex_buffer[(*vbi)++] = z;
+	vertex_buffer[(*vbi)++] = glm::vec3(x + size, y, z);
 
-	vertex_buffer[(*vbi)++] = x;
-	vertex_buffer[(*vbi)++] = y + size;
-	vertex_buffer[(*vbi)++] = z;
+	vertex_buffer[(*vbi)++] = glm::vec3(x, y + size, z);
 
-	vertex_buffer[(*vbi)++] = x;
-	vertex_buffer[(*vbi)++] = y;
-	vertex_buffer[(*vbi)++] = z + size;
+	vertex_buffer[(*vbi)++] = glm::vec3(x, y, z + size);
+}
+
+int SphericalMeshBuilder::DefineAthmosphereColorBuffer(glm::vec4* color_buffer) {
+
+	unsigned int cbi = 0; // color buffer index
+
+	glm::vec4 static_color = glm::vec4(0.5, 0.2, 0.2, 1.0);
+
+	for (int i = 0; i < (num_lat - 1) * num_lon * num_layers; i++) {
+		DefineAthmosphereComponentColors(color_buffer, &cbi);
+	}
+
+	return cbi; // TODO VERIFY
+}
+
+void SphericalMeshBuilder::DefineAthmosphereComponentColors(glm::vec4* color_buffer, unsigned int* cbi) {
+
+	glm::vec4 static_color = glm::vec4(0.5, 0.2, 0.2, 1.0);
+
+	color_buffer[(*cbi)++] = static_color;
+	color_buffer[(*cbi)++] = static_color;
+	color_buffer[(*cbi)++] = static_color;
+	color_buffer[(*cbi)++] = static_color;
+
 }
 
 int SphericalMeshBuilder::DefineAthmosphereIndexBuffer(unsigned int* index_buffer) {
@@ -342,7 +386,9 @@ int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* comput
 		for (int j = 1; j < num_lat; j++) {
 			for (int k = 0; k < num_lon; k++) {
 
-				compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
+				float density = (float)k / (float)num_lon;
+
+				compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, density };
 			}
 		}
 
@@ -361,7 +407,14 @@ void SphericalGraphicsMesh::Print() {
 
 	printf("\n\tvertex_buffer:\n");
 	for (int i = 0; i < vertex_buffer_count; i++) {
-		printf("\t\t%d: %f, %f, %f\n", i, vertex_buffer[i * N_ATTR_P_VERTEX], vertex_buffer[i * N_ATTR_P_VERTEX + 1], vertex_buffer[i * N_ATTR_P_VERTEX + 2]);
+		glm::vec3 vertex = vertex_buffer[i];
+		printf("\t\t%d: %f, %f, %f\n", i, vertex[0], vertex[1], vertex[2]);
+	}
+
+	printf("\n\tcolor_buffer:\n");
+	for (int i = 0; i < color_buffer_count; i++) {
+		glm::vec4 color = color_buffer[i];
+		printf("\t\t%d: %f, %f, %f, %f\n", i, color[0], color[1], color[2], color[3]);
 	}
 
 	printf("\n\tindex_buffer:\n");
@@ -376,8 +429,10 @@ void SphericalGraphicsMesh::PrintMeta() {
 	printf("\tnum_lat: %u\n", num_lat);
 	printf("\tnum_layers: %u\n", num_layers);
 	printf("\tvertex_buffer_count: %u\n", vertex_buffer_count);
+	printf("\tcolor_buffer_count: %u\n", color_buffer_count);
 	printf("\tindex_buffer_count: %u\n", index_buffer_count);
 	printf("\tvertex_buffer_size: %u\n", vertex_buffer_size);
+	printf("\tcolor_buffer_size: %u\n", color_buffer_size);
 	printf("\tindex_buffer_size: %u\n", index_buffer_size);
 }
 
