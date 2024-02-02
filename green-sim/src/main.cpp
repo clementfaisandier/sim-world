@@ -71,9 +71,10 @@ int main(void)
 
     SphericalGraphicsMesh* surface_mesh = mesh_builder.GetSurfaceMesh();
     SphericalGraphicsMesh* athmospheric_mesh = mesh_builder.GetAthmosphericMesh();
+    athmospheric_mesh->PrintMeta();
 
     SphericalComputeMesh* compute_mesh = mesh_builder.GetComputeMesh();
-    compute_mesh->Print();
+    compute_mesh->PrintMeta();
 
     glm::vec3* surface_positions = surface_mesh->vertex_buffer;
     glm::vec4* surface_colors = surface_mesh->color_buffer;
@@ -145,7 +146,7 @@ int main(void)
     GLuint athmospheric_colorBuffer;
     glGenBuffers(1, &athmospheric_colorBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, athmospheric_colorBuffer);
-    glBufferData(GL_ARRAY_BUFFER, athmospheric_mesh->color_buffer_size, athmospheric_colors, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, athmospheric_mesh->color_buffer_size, athmospheric_colors, GL_DYNAMIC_COPY);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -160,19 +161,31 @@ int main(void)
 
 
     // Athmospheric Compute Mesh ---------------------------------------
+    
+    GLuint compute_buffers[2];
+    glGenBuffers(2, compute_buffers);
 
-    GLuint compute_buffer;
-    glGenBuffers(1, &compute_buffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, compute_buffer);
-    glNamedBufferData(compute_buffer, compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_DRAW); // note: GL_DYNAMIC_DRAW may be the correct option
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, compute_buffers[0]);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, compute_buffers[1]);
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compute_buffer); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 1
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, athmospheric_colorBuffer); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 2
+    glNamedBufferData(compute_buffers[0], compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_COPY);
+    glNamedBufferData(compute_buffers[1], compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_COPY);
 
 
+    /* This doesn't work for some reason
+    glBindBuffersBase(GL_SHADER_STORAGE_BUFFER, 0, 2, compute_buffers);
+    glNamedBufferData(compute_buffers[0], compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_COPY); // note: GL_DYNAMIC_READ may be the correct option
+    glNamedBufferData(compute_buffers[1], compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_COPY); // note: GL_DYNAMIC_DRAW may be the correct option, also this one might not need to be instanced as the data will be writen by the compute shader on first pass
+    */
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compute_buffers[0]); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 0
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, compute_buffers[1]); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 0
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, athmospheric_colorBuffer); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 2
+    
 
 
-    // Uniforms ----------------------------------------------
+
+    // Uniforms For Graphics Program ----------------------------------------------
 
     // Universal Matrix Uniform
 
@@ -184,20 +197,19 @@ int main(void)
 
     glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
 
-    int transformation_m_uniform = glGetUniformLocation(graphics_program, "translation_matrix");
+    GLuint transformation_m_uniform = glGetUniformLocation(graphics_program, "translation_matrix");
 
     glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
     float dt = 0.005;
     float t = 0;
 
-    // Color Uniform
 
-    int color_uniform = glGetUniformLocation(graphics_program, "u_color");
-    glUniform4f(color_uniform, 0.0, 0.0, 0.0, 1.0);
+    // Uniforms for Compute Program -----------------
 
-    int dimension_uniform = glGetUniformLocation(graphics_program, "u_dimension");
-    glUniform3i(dimension_uniform, sts.lon, sts.lat, sts.layers);
+    bool double_buffer_toggle = 0;
+    GLuint double_buffer_toggle_uniform = glGetUniformLocation(compute_program, "double_buffer_toggle");
+    glUniform1ui(double_buffer_toggle_uniform, double_buffer_toggle);
 
 
     // Loop until the user closes the window 
@@ -212,6 +224,9 @@ int main(void)
         glDispatchCompute(compute_mesh->compute_buffer_count, 1, 1);
 
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+
+        double_buffer_toggle = !double_buffer_toggle;
+        glUniform1ui(double_buffer_toggle_uniform, double_buffer_toggle);
 
         glUseProgram(graphics_program);
 
@@ -235,14 +250,11 @@ int main(void)
         glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
 
-        glUniform4f(color_uniform, 0.0, 0.0, 0.0, 0.0);
         glBindVertexArray(surface_vao);
         glDrawElements(GL_TRIANGLES, surface_mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
 
         
-        glUniform4f(color_uniform, 0.0, 1.0, 1.0, 0.1);
         glBindVertexArray(athmospheric_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, athmospheric_colorBuffer);
         glDrawElements(GL_TRIANGLES, athmospheric_mesh->index_buffer_count* N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
 
         

@@ -4,9 +4,6 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 color;
 
 uniform mat4 translation_matrix;
-uniform ivec3 u_dimension;
-uniform vec4 u_color;
-uniform int u_object;
 
 out vec4 p_color;
 
