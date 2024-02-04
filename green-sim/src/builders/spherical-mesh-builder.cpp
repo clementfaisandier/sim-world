@@ -185,7 +185,7 @@ int SphericalMeshBuilder::DefineSurfaceColorBuffer(glm::vec4* color_buffer) {
 
 	unsigned int cbi = 0; // color buffer index
 
-	glm::vec4 static_color = glm::vec4(0.5, 0.2, 0.2, 1.0);
+	glm::vec4 static_color = glm::vec4(0.2, 0.2, 0.6, 1.0);
 
 	// Define the top vertex
 	color_buffer[cbi++] = static_color;
@@ -254,6 +254,7 @@ int SphericalMeshBuilder::DefineSurfaceIndexBuffer(unsigned int* index_buffer) {
 	return ibi / N_VERTEX_P_PRIMITIVE;
 }
 
+
 int SphericalMeshBuilder::DefineAthmosphereVertexBuffer(glm::vec3* vertex_buffer) {
 
 	unsigned int vbi = 0; // vertex buffer index
@@ -304,9 +305,9 @@ int SphericalMeshBuilder::DefineAthmosphereColorBuffer(glm::vec4* color_buffer) 
 
 	unsigned int cbi = 0; // color buffer index
 
-	glm::vec4 static_color = glm::vec4(0.5, 0.2, 0.2, 1.0);
+	glm::vec4 static_color = glm::vec4(0.5, 0.2, 0.2, 0.05);
 
-	for (int i = 0; i < (num_lat - 1) * num_lon * num_layers; i++) {
+	for (int i = 0; i < ((num_lat - 1) * num_lon + 2) * num_layers; i++) {
 		DefineAthmosphereComponentColors(color_buffer, &cbi);
 	}
 
@@ -374,6 +375,7 @@ void SphericalMeshBuilder::DefineAthmosphericVolume(unsigned int* index_buffer, 
 	index_buffer[(*ibi)++] = layer_offset + 2;
 	index_buffer[(*ibi)++] = layer_offset + 3;
 }
+
 
 int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* compute_buffer) {
 
@@ -451,7 +453,7 @@ void SphericalComputeMesh::Print() {
 }
 
 void SphericalComputeMesh::PrintMeta() {
-	printf("\nSphericalGraphicsMesh:\n");
+	printf("\nSphericalComputeMesh:\n");
 	printf("\tnum_lon: %u\n", num_lon);
 	printf("\tnum_lat: %u\n", num_lat);
 	printf("\tnum_layers: %u\n", num_layers);

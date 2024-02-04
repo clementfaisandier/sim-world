@@ -84,6 +84,8 @@ int main(void)
     glm::vec4* athmospheric_colors = athmospheric_mesh->color_buffer;
     unsigned int* athmospheric_indices = athmospheric_mesh->index_buffer;
 
+    SphericalComputeMesh::Cell* compute_buffer = compute_mesh->compute_buffer;
+
 
 
 
@@ -102,25 +104,25 @@ int main(void)
     glBindVertexArray(surface_vao);
 
     // vertex buffer
-    GLuint vertexBuffer; // buffer id
-    glGenBuffers(1, &vertexBuffer); // generate the actual buffer in memory
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer); // tell opengl how to handle stride and how to navigate data
+    GLuint vertex_buffer; // buffer id
+    glGenBuffers(1, &vertex_buffer); // generate the actual buffer in memory
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); // tell opengl how to handle stride and how to navigate data
     glBufferData(GL_ARRAY_BUFFER, surface_mesh->vertex_buffer_size, surface_positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
     glEnableVertexAttribArray(0); // enable position attributes of our vertices
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // tell opengl how to read this attribute
     
     // color buffer
-    GLuint colorBuffer;
-	glGenBuffers(1, &colorBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+    GLuint color_buffer;
+	glGenBuffers(1, &color_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
     glBufferData(GL_ARRAY_BUFFER, surface_mesh->color_buffer_size, surface_colors, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
     
     // index buffer
-    GLuint indexBuffer;
-    glGenBuffers(1, &indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer); // because this is an index buffer we must bind it differently
+    GLuint index_buffer;
+    glGenBuffers(1, &index_buffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer); // because this is an index buffer we must bind it differently
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, surface_mesh->index_buffer_size, surface_indices, GL_STATIC_DRAW); // same when adding data
 
 
@@ -135,25 +137,25 @@ int main(void)
     glBindVertexArray(athmospheric_vao);
 
     // vertex buffer
-    GLuint athmospheric_vertexBuffer; // buffer id
-    glGenBuffers(1, &athmospheric_vertexBuffer); // generate the actual buffer in memory
-    glBindBuffer(GL_ARRAY_BUFFER, athmospheric_vertexBuffer); // tell opengl how to handle stride and how to navigate data
+    GLuint athmospheric_vertex_buffer; // buffer id
+    glGenBuffers(1, &athmospheric_vertex_buffer); // generate the actual buffer in memory
+    glBindBuffer(GL_ARRAY_BUFFER, athmospheric_vertex_buffer); // tell opengl how to handle stride and how to navigate data
     glBufferData(GL_ARRAY_BUFFER, athmospheric_mesh->vertex_buffer_size, athmospheric_positions, GL_STATIC_DRAW); // tell opengl what data to fill into buffer and how that buffer will be accessed
     glEnableVertexAttribArray(0); // enable position attributes of our vertices
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // tell opengl how to read this attribute
 
     // color buffer
-    GLuint athmospheric_colorBuffer;
-    glGenBuffers(1, &athmospheric_colorBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, athmospheric_colorBuffer);
+    GLuint athmospheric_color_buffer;
+    glGenBuffers(1, &athmospheric_color_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, athmospheric_color_buffer);
     glBufferData(GL_ARRAY_BUFFER, athmospheric_mesh->color_buffer_size, athmospheric_colors, GL_DYNAMIC_COPY);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
     // index buffer
-    GLuint athmospheric_indexBuffer;
-    glGenBuffers(1, &athmospheric_indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, athmospheric_indexBuffer); // because this is an index buffer we must bind it differently
+    GLuint athmospheric_index_buffer;
+    glGenBuffers(1, &athmospheric_index_buffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, athmospheric_index_buffer); // because this is an index buffer we must bind it differently
 
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, athmospheric_mesh->index_buffer_size, athmospheric_indices, GL_STATIC_DRAW); // same when adding data
 
@@ -180,8 +182,17 @@ int main(void)
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compute_buffers[0]); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 0
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, compute_buffers[1]); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 0
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, athmospheric_colorBuffer); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 2
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, athmospheric_color_buffer); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 2
     
+
+    // Retrieving buffer metadata
+    GLint buffer_size;
+    glGetNamedBufferParameteriv(compute_buffers[0], GL_BUFFER_SIZE, &buffer_size);
+    printf("compute_buffers[0]: %d\n", buffer_size/sizeof(*compute_mesh->compute_buffer));
+    glGetNamedBufferParameteriv(compute_buffers[1], GL_BUFFER_SIZE, &buffer_size);
+    printf("compute_buffers[1]: %d\n", buffer_size);
+    glGetNamedBufferParameteriv(athmospheric_color_buffer, GL_BUFFER_SIZE, &buffer_size);
+    printf("athmospheric_color_buffer: %d\n", buffer_size);
 
 
 
@@ -215,9 +226,6 @@ int main(void)
     // Loop until the user closes the window 
     while (!glfwWindowShouldClose(window))
     {
-
-
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, athmospheric_colorBuffer); // but does this work?
 
         // Compute Shader
         glUseProgram(compute_program);

@@ -8,13 +8,13 @@ struct Cell {
 };
 
 layout(binding = 1) buffer SimData {
-	Cell cells_zero[1];
-	Cell cells_one[1];
+	Cell cells_zero[160];
+	Cell cells_one[160];
 };
 
 
 layout(binding = 3) buffer VertexColor {
-	vec4 colors[];
+	vec4 colors[640];
 };
 
 uniform bool double_buffer_toggle;
@@ -44,14 +44,28 @@ vec4 Visualization(Cell output_cell) {
 	output_cell.density,
 	output_cell.pressure, 
 	0.0, 
-	(output_cell.density + output_cell.pressure) / 2);
+	0.5);
 
 	return color;
 }
 
 void main() {
-	const uint comp_index = gl_GlobalInvocationID.x;
-	const uint color_index = comp_index * 4;
+	
+	uint comp_index = gl_GlobalInvocationID.x;
+    uint color_index = comp_index * 4;
+
+    Cell input_cell = cells_zero[comp_index];
+
+    vec4 cell_color = vec4(input_cell.pressure, input_cell.density, 0.0, 1.0);
+
+    for (int i = 0; i < 4; i++) {
+		colors[color_index + i] = cell_color;
+    }
+
+	/*
+
+	uint comp_index = gl_GlobalInvocationID.x;
+	uint color_index = comp_index * 4;
 
 	//Cell input_cell = double_buffer_toggle ? cells_zero[comp_index] : cells_one[comp_index];
 	Cell input_cell = cells_zero[comp_index];
