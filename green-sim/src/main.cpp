@@ -174,12 +174,6 @@ int main(void)
     glNamedBufferData(compute_buffers[1], compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_COPY);
 
 
-    /* This doesn't work for some reason
-    glBindBuffersBase(GL_SHADER_STORAGE_BUFFER, 0, 2, compute_buffers);
-    glNamedBufferData(compute_buffers[0], compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_COPY); // note: GL_DYNAMIC_READ may be the correct option
-    glNamedBufferData(compute_buffers[1], compute_mesh->compute_buffer_size, compute_mesh->compute_buffer, GL_DYNAMIC_COPY); // note: GL_DYNAMIC_DRAW may be the correct option, also this one might not need to be instanced as the data will be writen by the compute shader on first pass
-    */
-
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compute_buffers[0]); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 0
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, compute_buffers[1]); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 0
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, athmospheric_color_buffer); // bind the buffer GL_SHADER_STORAGE_BUFFER binding point 2
@@ -220,24 +214,29 @@ int main(void)
 
     bool double_buffer_toggle = 0;
     GLuint double_buffer_toggle_uniform = glGetUniformLocation(compute_program, "double_buffer_toggle");
-    glUniform1ui(double_buffer_toggle_uniform, double_buffer_toggle);
-
+    glUniform1d(double_buffer_toggle_uniform, double_buffer_toggle);
 
     // Loop until the user closes the window 
     while (!glfwWindowShouldClose(window))
     {
 
-        // Compute Shader
+        // Compute Pipeline
         glUseProgram(compute_program);
-        glDispatchCompute(compute_mesh->compute_buffer_count, 1, 1);
 
+        glDispatchCompute(compute_mesh->compute_buffer_count, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
+        // Swap Buffers
         double_buffer_toggle = !double_buffer_toggle;
-        glUniform1ui(double_buffer_toggle_uniform, double_buffer_toggle);
 
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compute_buffers[double_buffer_toggle]);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, compute_buffers[!double_buffer_toggle]);
+
+
+
+
+        // Graphics Pipeline
         glUseProgram(graphics_program);
-
 
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);

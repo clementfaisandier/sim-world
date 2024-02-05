@@ -2,19 +2,22 @@
 layout(local_size_x = 1, local_size_y = 1) in;
 
 struct Cell {
-	vec3 velocity;
+	float[3] velocity;
 	float pressure;
 	float density;
 };
 
-layout(binding = 1) buffer SimData {
-	Cell cells_zero[160];
-	Cell cells_one[160];
+layout(std430, binding = 1) buffer SimDataIn {
+	Cell input_cell_buffer[96];
+};
+
+layout(std430, binding = 2) buffer SimDataOut {
+	Cell output_cell_buffer[96];
 };
 
 
 layout(binding = 3) buffer VertexColor {
-	vec4 colors[640];
+	vec4 colors[384];
 };
 
 uniform bool double_buffer_toggle;
@@ -23,68 +26,44 @@ Cell Compute(Cell input_cell) {
 
 	Cell output_cell;
 
-	output_cell.pressure = input_cell.pressure - 0.01;
-	output_cell.density = input_cell.density + 0.01;
-
-	if (output_cell.pressure < 0.0) {
-		output_cell.pressure = 1.0;
-	};
-	if (output_cell.density > 1.0) {
-		output_cell.density = 0.0;
-	};
+	for (int i = 0; i < 3; i++) {
+		output_cell.velocity[i] = input_cell.velocity[i] + 0.01;
+		if (output_cell.velocity[i] > 3.14) {
+			output_cell.velocity[i] = 0.0;
+		}
+	}
 
 	return output_cell;
 }
 
-vec4 Visualization(Cell output_cell) {
+vec4 Visualization(Cell input_cell) {
 
 	vec4 color;
 
 	color = vec4(
-	output_cell.density,
-	output_cell.pressure, 
-	0.0, 
-	0.5);
+	sin(input_cell.velocity[0]),
+	sin(input_cell.velocity[1]), 
+	sin(input_cell.velocity[2]), 
+	0.1
+	);
 
 	return color;
 }
 
 void main() {
 	
-	uint comp_index = gl_GlobalInvocationID.x;
+	uint comp_index = gl_WorkGroupID.x;
     uint color_index = comp_index * 4;
 
-    Cell input_cell = cells_zero[comp_index];
+    Cell input_cell = input_cell_buffer[comp_index];
+	Cell output_cell = Compute(input_cell);
+	output_cell_buffer[comp_index] = output_cell;
 
-    vec4 cell_color = vec4(input_cell.pressure, input_cell.density, 0.0, 1.0);
+	vec4 cell_color = Visualization(output_cell);
 
     for (int i = 0; i < 4; i++) {
 		colors[color_index + i] = cell_color;
     }
-
-	/*
-
-	uint comp_index = gl_GlobalInvocationID.x;
-	uint color_index = comp_index * 4;
-
-	//Cell input_cell = double_buffer_toggle ? cells_zero[comp_index] : cells_one[comp_index];
-	Cell input_cell = cells_zero[comp_index];
-	Cell output_cell = Compute(input_cell);
-
-	vec4 cell_color = Visualization(output_cell);
-
-	for (int i = 0; i < 4; i++) {
-		colors[color_index + i] = cell_color;
-	}
-
-	cells_zero[comp_index] = output_cell;
-	/*
-	if (double_buffer_toggle) {
-		cells_one[comp_index] = output_cell;
-	} else {
-		cells_zero[comp_index] = output_cell;
-	}
-	*/
 }
 
 // NOTE: buffer switching is not yet implemented

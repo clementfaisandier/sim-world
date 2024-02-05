@@ -305,18 +305,16 @@ int SphericalMeshBuilder::DefineAthmosphereColorBuffer(glm::vec4* color_buffer) 
 
 	unsigned int cbi = 0; // color buffer index
 
-	glm::vec4 static_color = glm::vec4(0.5, 0.2, 0.2, 0.05);
-
 	for (int i = 0; i < ((num_lat - 1) * num_lon + 2) * num_layers; i++) {
 		DefineAthmosphereComponentColors(color_buffer, &cbi);
 	}
 
-	return cbi; // TODO VERIFY
+	return cbi;
 }
 
 void SphericalMeshBuilder::DefineAthmosphereComponentColors(glm::vec4* color_buffer, unsigned int* cbi) {
 
-	glm::vec4 static_color = glm::vec4(0.5, 0.2, 0.2, 1.0);
+	glm::vec4 static_color = glm::vec4(1.0, 0.0, 0.0, 1.0);
 
 	color_buffer[(*cbi)++] = static_color;
 	color_buffer[(*cbi)++] = static_color;
@@ -381,21 +379,20 @@ int SphericalMeshBuilder::DefineComputeBuffer(SphericalComputeMesh::Cell* comput
 
 	unsigned int cbi = 0; // compute buffer index
 
+	SphericalComputeMesh::Cell cell { glm::vec3(0.0, 0.5, 1.0), 1.0, 1.0 };
+
 	for (int i = 0; i < num_layers; i++) {
 
-		compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
+		compute_buffer[cbi++] = cell;
 
 		for (int j = 1; j < num_lat; j++) {
 			for (int k = 0; k < num_lon; k++) {
 
-				float density = (float)k / (float)num_lon;
-				float pressure = (float)j / (float)num_lat;
-
-				compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), pressure, density };
+				compute_buffer[cbi++] = cell;
 			}
 		}
 
-		compute_buffer[cbi++] = SphericalComputeMesh::Cell{ glm::vec3(0.0, 0.0, 0.0), 0.0, 1.0 };
+		compute_buffer[cbi++] = cell;
 
 	}
 
