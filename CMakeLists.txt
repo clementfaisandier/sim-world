@@ -45,11 +45,11 @@ add_library(
     SHARED # This specifies .so dynamic lib generation
     src/lalo.cpp
 )
-add_library(
-    lalo::library
-    ALIAS # Specify a new name/target for this lib
-    lalo_library
-)
+# add_library(
+#     lalo::library
+#     ALIAS # Specify a new name/target for this lib
+#     lalo_library
+# )
 target_include_directories(
     lalo_library # Can't use alias target on this function...
     PRIVATE
@@ -79,5 +79,33 @@ target_link_libraries(
 target_link_libraries(
     ${PROJECT_NAME}
     PRIVATE
-    lalo::library
+    lalo_library
 )
+
+###################################
+# Install execs, libs,... locally #
+###################################
+
+# Use `sudo make install` to install.
+# Use `sudo xargs rm < install_manifest.txt` to uninstall  
+
+# The default destination is set by a variable called CMAKE_INSTALL_PREFIX
+#   which on linux is /usr/local and on windows is C:/Program Files/${PROJECT_NAME}
+# Install exec to /usr/local/bin
+install(
+    TARGETS ${PROJECT_NAME}
+    DESTINATION bin
+)
+install(
+    DIRECTORY ${PROJECT_SOURCE_DIR}/include
+    DESTINATION include 
+)
+install(
+    TARGETS lalo_library # again no alias, not sure why use aliases...
+    LIBRARY DESTINATION lib
+)
+# And all the config files... to etc, man, ...
+# install(
+#     FILES ${PROJECT_NAME}.conf
+#     DESTINATION etc
+# )
