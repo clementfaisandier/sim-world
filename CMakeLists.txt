@@ -19,13 +19,13 @@ set(
 #     "src/*.cpp"
 # )
 
-##########################
-# Define and link static #
-##########################
+##################################
+# Define and link static library #
+##################################
 
 add_library(
     foo_library
-    STATIC
+    STATIC # Specify static .a lib
     src/foo.cpp
 )
 target_include_directories(
@@ -35,6 +35,27 @@ target_include_directories(
     # PUBLIC # This means both for this target and targets that link to this target
     ${PROJECT_SOURCE_DIR}/include # we could specify /static but it is nice to see in cpp the include statement specify /static there.
 )
+
+##################################
+# Define and link shared library #
+##################################
+
+add_library(
+    lalo_library
+    SHARED # This specifies .so dynamic lib generation
+    src/lalo.cpp
+)
+add_library(
+    lalo::library
+    ALIAS # Specify a new name/target for this lib
+    lalo_library
+)
+target_include_directories(
+    lalo_library # Can't use alias target on this function...
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+)
+
 
 ##############################
 # Define and link executable #
@@ -54,4 +75,9 @@ target_link_libraries(
     ${PROJECT_NAME}
     PRIVATE
     foo_library
+)
+target_link_libraries(
+    ${PROJECT_NAME}
+    PRIVATE
+    lalo::library
 )
