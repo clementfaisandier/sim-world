@@ -1,6 +1,6 @@
-#ifndef MYHEADER_H
-#define MYHEADER_H
+#ifndef FI_H
+#define FI_H
 
-void foo();  // Function declaration
+void fi();  // Function declaration
 
 #endif

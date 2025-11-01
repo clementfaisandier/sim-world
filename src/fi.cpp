@@ -2,7 +2,7 @@
 
 #include "fi.hpp"
 
-void foo()
+void fi()
 {
-    std::cout << "fifafoofi" << std::endl;
+    std::cout << "fi" << std::endl;
 }
