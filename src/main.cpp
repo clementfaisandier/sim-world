@@ -11,7 +11,7 @@ int main(void)
     if (!glfwInit())
         return -1;
 
-    glfwSetErrorCallback(GLFWErrorCallback);
+    glfwSetErrorCallback(glfwErrorCallback);
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -33,7 +33,7 @@ int main(void)
 
     // Error output and callbacks
     glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(GLErrorCallback, 0);
+    glDebugMessageCallback(glErrorCallback, 0);
 
     // face culling optimization -> can lead to invisible triangles if the index buffer defines the trianges in a counter-clockwise fashion
     glEnable(GL_CULL_FACE);
@@ -63,8 +63,8 @@ int main(void)
     
     SphericalMeshBuilder mesh_builder = SphericalMeshBuilder(lon, lat, layers, scale_min, scale_max);
 
-    SphericalGraphicsMesh* surface_mesh = mesh_builder.GetSurfaceMesh();
-    SphericalGraphicsMesh* athmospheric_mesh = mesh_builder.GetAthmosphericMesh();
+    SphericalGraphicsMesh* surface_mesh = mesh_builder.getSurfaceMesh();
+    SphericalGraphicsMesh* athmospheric_mesh = mesh_builder.getAthmosphericMesh();
 
     //PrintSphericalGraphicsMesh(surface_mesh);
     //PrintSphericalGraphicsMesh(athmospheric_mesh);
@@ -139,19 +139,19 @@ int main(void)
     unsigned int computeProgram = CreateComputeProgram(computeShader);*/
 
     // get source code
-    char* vertexShaderSource = ParseShader("shaders/vertex-shader.vert");
-    char* fragmentShaderSource = ParseShader("shaders/fragment-shader.frag");
+    char* vertexShaderSource = parseShader("shaders/vertex-shader.vert");
+    char* fragmentShaderSource = parseShader("shaders/fragment-shader.frag");
 
     // compile shaders
-    unsigned int vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    unsigned int fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
     free(vertexShaderSource);
     free(fragmentShaderSource);
     //earth_tensor.~SphericalTensor();
 
     // attach shaders
-    unsigned int program = CreateProgram(vertexShader, fragmentShader);
+    unsigned int program = createProgram(vertexShader, fragmentShader);
 
     glUseProgram(program);
 
@@ -161,13 +161,17 @@ int main(void)
 
     // Universal Matrix Uniform
 
-    TransformationModule TM = TransformationModule();
+    TransformationModule* TM = &TransformationModule::getInstance();
 
-    TM.SetRotation(glm::vec3(0.0, 0.0, 0.0));
-    TM.SetScale(glm::vec3(0.4, 0.4, 0.4));
-    TM.SetCoordinates(glm::vec3(0.0, 0.0, 0.0));
+    // Register the GLFW window with the TransformationModule so it can
+    // receive key callbacks via glfwSetKeyCallback inside setWindow().
+    TM->setWindow(window);
 
-    glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
+    TM->setRotation(glm::vec3(0.0, 0.0, 0.0));
+    TM->setScale(glm::vec3(0.4, 0.4, 0.4));
+    TM->setCoordinates(glm::vec3(0.0, 0.0, 0.0));
+
+    glm::mat4x4 transformation_matrix = TM->getFinalTransformMatrix();
 
     int transformation_m_uniform = glGetUniformLocation(program, "translation_matrix");
 
@@ -199,24 +203,21 @@ int main(void)
         glClear(GL_DEPTH_BUFFER_BIT);
 
         // Transformations
-
-        t += ((t + dt) > (2 * PI)) ? dt - (2 * PI) : dt;
-
-        //TM.Rotate(glm::vec3(0.01, 0.01, 0.01));
-        //TM.Scale(glm::vec3(0, 0, 0));
-        //TM.SetCoordinates(glm::vec3(sinf(t)/2, cos(t)/2, 0.0));
-
-        TM.SetRotation(glm::vec3(sinf(t) * glm::radians(45.0), t, 0));
-
-        glm::mat4x4 transformation_matrix = TM.GetFinalTransformMat();
-
+        // t += ((t + dt) > (2 * PI)) ? dt - (2 * PI) : dt;
+        //TM->rotate(glm::vec3(0.01, 0.01, 0.01));
+        //TM->scale(glm::vec3(0, 0, 0));
+        // TM->setCoordinates(glm::vec3(sinf(t)/2, cos(t)/2, 0.0));
+        // TM->setRotation(glm::vec3(sinf(t) * glm::radians(45.0), t, 0));
+        glm::mat4x4 transformation_matrix = TM->getFinalTransformMatrix();
         glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
+        // Draw earth surface
         glUniform1i(object_uniform, 0);
         glUniform4f(color_uniform, 0.0, 0.0, 0.0, 0.0);
         glBindVertexArray(surface_vao);
         glDrawElements(GL_TRIANGLES, surface_mesh->index_buffer_count * N_VERTEX_P_PRIMITIVE, GL_UNSIGNED_INT, nullptr);
 
+        // Draw athmospere surface
         glUniform1i(object_uniform, 1);
         glUniform4f(color_uniform, 0.0, 1.0, 1.0, 0.1);
         glBindVertexArray(athmospheric_vao);
@@ -237,7 +238,7 @@ int main(void)
 
 
 // Error callback functions
-static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+static void glErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     // ignore list
     switch (severity)
@@ -247,7 +248,7 @@ static void GLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severi
     }
     printf("OpenGL Error!\nSource: %x, type: %x, id: %d, severity: %x\nMessage: %s\n\n", source, type, id, severity, message);
 }
-static void GLFWErrorCallback(int code, const char* description)
+static void glfwErrorCallback(int code, const char* description)
 {
     printf("GLFW Error!\nCode: %x: %s\n\n", code, description);
 }
@@ -255,7 +256,7 @@ static void GLFWErrorCallback(int code, const char* description)
 
 // returns the file as a string
 // NOTE: RETURNED STRING MUST BE DE-ALLOCATED
-static char* ParseShader(const char* filepath)
+static char* parseShader(const char* filepath)
 {
     FILE* file = std::fopen(filepath, "rb");
     if (!file) {
@@ -283,7 +284,7 @@ static char* ParseShader(const char* filepath)
     return fileAsString;
 }
 
-static unsigned int CompileShader(unsigned int type, char* sourceCode)
+static unsigned int compileShader(unsigned int type, char* sourceCode)
 {
     unsigned int shader = glCreateShader(type); // create shader object of given type
     if (shader == 0)
@@ -364,7 +365,7 @@ static unsigned int CreateComputeProgram(unsigned int computeShader) {
 }
 
 // this method is going to take some shader code in string format and make the shader, then link them into a single program
-static unsigned int CreateProgram(unsigned int vertexShader, unsigned int fragmentShader)
+static unsigned int createProgram(unsigned int vertexShader, unsigned int fragmentShader)
 {
     unsigned int program = glCreateProgram(); // create program object to which shaders can be attached
 
