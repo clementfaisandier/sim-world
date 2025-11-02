@@ -28,6 +28,7 @@ find_package(
 )
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
+find_package(glm CONFIG REQUIRED)
 
 ##############################
 # Define and link executable #
@@ -50,4 +51,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenGL::GL
     ${GLEW_LIBRARIES}
     ${GLFW_LIBRARIES}
+    glm::glm
 )
