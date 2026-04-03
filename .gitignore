@@ -1,5 +1,7 @@
+.vscode
 Makefile
 cmake_install.cmake
+CMakeUserPresets.json
 CMakeCache.txt
 CMakeFiles/
 sim-world
