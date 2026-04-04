@@ -8,8 +8,8 @@
 #include <fstream>
 #include <errno.h>
 
-#include "spherical-mesh-builder.h"
-#include "transformation-module.h"
+#include "SphericalMeshBuilder.h"
+#include "TransformationModule.h"
 
 
 static void glErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);

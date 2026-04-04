@@ -1,4 +1,4 @@
-#include "transformation-module.h"
+#include "TransformationModule.h"
 #include <glm/gtc/type_ptr.hpp>
 
 TransformationModule::TransformationModule() {}

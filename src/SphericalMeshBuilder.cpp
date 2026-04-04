@@ -1,4 +1,4 @@
-#include "spherical-mesh-builder.h"
+#include "SphericalMeshBuilder.h"
 
 
 // PUBLIC
