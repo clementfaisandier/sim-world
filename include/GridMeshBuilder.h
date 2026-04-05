@@ -5,7 +5,7 @@
 #define N_ATTR_P_VERTEX 3
 #define N_VERTEX_P_PRIMITIVE 3
 
-typedef struct GridGraphicsMesh {
+struct GridGraphicsMesh {
 
     float* vertex_buffer = nullptr;
     unsigned int* index_buffer = nullptr;
@@ -27,10 +27,10 @@ typedef struct GridGraphicsMesh {
     unsigned int num_z = 0;
 };
 
-typedef struct GridComputeMesh {
+struct GridComputeMesh {
 
 
-    typedef struct Cell {
+    struct Cell {
         glm::vec3 velocity;
         float pressure;
         float density;

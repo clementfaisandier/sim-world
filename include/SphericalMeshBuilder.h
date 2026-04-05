@@ -7,7 +7,7 @@
 #define N_ATTR_P_VERTEX 3
 #define N_VERTEX_P_PRIMITIVE 3
 
-typedef struct SphericalGraphicsMesh {
+struct SphericalGraphicsMesh {
 
     float* vertex_buffer = nullptr;
     unsigned int* index_buffer = nullptr;
@@ -23,9 +23,9 @@ typedef struct SphericalGraphicsMesh {
     unsigned int num_layers = 0;
 };
 
-typedef struct SphericalComputeMesh {
+struct SphericalComputeMesh {
 
-    typedef struct Cell {
+    struct Cell {
         glm::vec3 velocity;
         float pressure;
         float density;
