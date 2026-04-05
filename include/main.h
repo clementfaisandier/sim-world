@@ -10,6 +10,7 @@
 
 #include "Shaders.h"
 #include "SphericalMeshBuilder.h"
+#include "GridMeshBuilder.h"
 #include "TransformationModule.h"
 
 #define PI 3.14159265358979323846

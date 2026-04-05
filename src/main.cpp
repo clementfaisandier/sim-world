@@ -7,6 +7,65 @@ int main(void)
 }
 
 
+int grid_simulation(void)
+{
+    /////////////////////
+    // Initialize GLFW //
+    /////////////////////
+    if (!glfwInit())
+        return -1;
+
+    glfwSetErrorCallback(glfwErrorCallback);
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // Create a windowed mode window and its OpenGL context
+    GLFWwindow* window = glfwCreateWindow(800, 800, "Hello World", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        return -1;
+    }
+
+    // Make the window's context the current
+    glfwMakeContextCurrent(window);
+
+    if (glewInit() != GLEW_OK)
+        std::cout << "Error!" << std::endl;
+
+    // Error output and callbacks
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(glErrorCallback, 0);
+
+    // face culling optimization -> can lead to invisible triangles if the index buffer defines the trianges in a counter-clockwise fashion
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+
+    // blending for alpha channel
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_DEPTH_TEST);
+
+    glfwSwapInterval(1);
+
+    std::cout << glGetString(GL_VERSION) << std::endl;
+
+    ///////////////////
+    // Define Meshes //
+    ///////////////////
+
+    // MESHES AND VAOS ---------------------------------------
+
+    GridMeshBuilder mesh_builder = GridMeshBuilder(10, 10, 10);
+
+    GridComputeMesh* grid_compute_mesh = mesh_builder.getComputeMesh();
+    GridGraphicsMesh* grid_volume_mesh = mesh_builder.getVolumeMesh();
+}
+
+
 int spherical_simulation(void)
 {
     /////////////////////
