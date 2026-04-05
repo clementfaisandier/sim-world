@@ -152,7 +152,7 @@ int spherical_simulation(void)
 
     // free(vertexShaderSource);
     // free(fragmentShaderSource);
-    //earth_tensor.~SphericalTensor();
+    // earth_tensor.~SphericalTensor();
 
     // attach shaders
     unsigned int program = createProgram(vertexShader, fragmentShader);
@@ -288,7 +288,7 @@ static char* parseShader(const char* filepath)
     return fileAsString;
 }
 
-static unsigned int compileShader(unsigned int type, std::string sourceCode)
+static unsigned int compileShader(unsigned int type, const std::string& sourceCode)
 {
     unsigned int shader = glCreateShader(type); // create shader object of given type
     if (shader == 0)
