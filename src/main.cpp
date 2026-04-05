@@ -1,9 +1,13 @@
 #include "main.h"
 
-#define PI 3.14159265358979323846
-
 
 int main(void)
+{
+    return spherical_simulation();
+}
+
+
+int spherical_simulation(void)
 {
     /////////////////////
     // Initialize GLFW //
@@ -139,15 +143,15 @@ int main(void)
     unsigned int computeProgram = CreateComputeProgram(computeShader);*/
 
     // get source code
-    char* vertexShaderSource = parseShader("shaders/vertex-shader.vert");
-    char* fragmentShaderSource = parseShader("shaders/fragment-shader.frag");
+    // char* vertexShaderSource = parseShader("shaders/vertex-shader.vert");
+    // char* fragmentShaderSource = parseShader("shaders/fragment-shader.frag");
 
     // compile shaders
-    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, kVertexShader);
+    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, kFragmentShader);
 
-    free(vertexShaderSource);
-    free(fragmentShaderSource);
+    // free(vertexShaderSource);
+    // free(fragmentShaderSource);
     //earth_tensor.~SphericalTensor();
 
     // attach shaders
@@ -270,9 +274,9 @@ static char* parseShader(const char* filepath)
     char* fileAsString = (char*)malloc(size + 1);
     if (fileAsString == 0)
     {
-		printf("Error allocating memory for file string.");
-		exit(1);
-	}
+        printf("Error allocating memory for file string.");
+        exit(1);
+    }
 
     fseek(file, 0, SEEK_SET); // reset file stream pointer
     fread(fileAsString, 1, size, file); // places size number of char-sized memory from file into where: places file into where. warning is missunderstanding
@@ -284,15 +288,16 @@ static char* parseShader(const char* filepath)
     return fileAsString;
 }
 
-static unsigned int compileShader(unsigned int type, char* sourceCode)
+static unsigned int compileShader(unsigned int type, std::string sourceCode)
 {
     unsigned int shader = glCreateShader(type); // create shader object of given type
     if (shader == 0)
     {
-		printf("Error creating shader object. GL ErrorNo: %d\n\n", glGetError());
-		exit(1);
-	}
-    glShaderSource(shader, 1, &sourceCode, NULL);
+        printf("Error creating shader object. GL ErrorNo: %d\n\n", glGetError());
+        exit(1);
+    }
+    const GLchar* source = sourceCode.c_str();
+    glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
 
     int result;
@@ -371,9 +376,9 @@ static unsigned int createProgram(unsigned int vertexShader, unsigned int fragme
 
     if (program == 0)
     {
-		printf("Error creating program object. GL ErrorNo: %d\n\n", glGetError());
-		exit(1);
-	}
+        printf("Error creating program object. GL ErrorNo: %d\n\n", glGetError());
+        exit(1);
+    }
 
     glAttachShader(program, vertexShader); // attach
     glAttachShader(program, fragmentShader);
@@ -409,7 +414,7 @@ static unsigned int createProgram(unsigned int vertexShader, unsigned int fragme
         char* log = (char*)malloc(max_length);
         if (log == 0) {
             printf("Error allocating memory for log string: program compilation error also occured.");
-			exit(1);
+            exit(1);
         }
         int length;
 
