@@ -36,4 +36,5 @@ target_include_directories(
     ${PROJECT_NAME}
     PRIVATE
     ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/shaders
 )

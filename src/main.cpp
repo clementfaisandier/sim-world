@@ -139,16 +139,16 @@ int main(void)
     unsigned int computeProgram = CreateComputeProgram(computeShader);*/
 
     // get source code
-    char* vertexShaderSource = parseShader("shaders/vertex-shader.vert");
-    char* fragmentShaderSource = parseShader("shaders/fragment-shader.frag");
+    // char* vertexShaderSource = parseShader("shaders/vertex-shader.vert");
+    // char* fragmentShaderSource = parseShader("shaders/fragment-shader.frag");
 
     // compile shaders
-    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, kVertexShader);
+    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, kFragmentShader);
 
-    free(vertexShaderSource);
-    free(fragmentShaderSource);
-    //earth_tensor.~SphericalTensor();
+    // free(vertexShaderSource);
+    // free(fragmentShaderSource);
+    // earth_tensor.~SphericalTensor();
 
     // attach shaders
     unsigned int program = createProgram(vertexShader, fragmentShader);
@@ -284,7 +284,7 @@ static char* parseShader(const char* filepath)
     return fileAsString;
 }
 
-static unsigned int compileShader(unsigned int type, char* sourceCode)
+static unsigned int compileShader(unsigned int type, const std::string& sourceCode)
 {
     unsigned int shader = glCreateShader(type); // create shader object of given type
     if (shader == 0)
@@ -292,7 +292,8 @@ static unsigned int compileShader(unsigned int type, char* sourceCode)
 		printf("Error creating shader object. GL ErrorNo: %d\n\n", glGetError());
 		exit(1);
 	}
-    glShaderSource(shader, 1, &sourceCode, NULL);
+    const char* cstr = sourceCode.c_str();
+    glShaderSource(shader, 1, &cstr, NULL);
     glCompileShader(shader);
 
     int result;

@@ -6,8 +6,9 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
-#include <errno.h>
+#include <string>
 
+#include "Shaders.h"
 #include "SphericalMeshBuilder.h"
 #include "TransformationModule.h"
 
@@ -18,7 +19,7 @@ static void glfwErrorCallback(int code, const char* description);
 
 static char* parseShader(const char* filepath);
 
-static unsigned int compileShader(unsigned int type, char* sourceCode);
+static unsigned int compileShader(unsigned int type, const std::string& sourceCode);
 
 static unsigned int createProgram(unsigned int vertexShader, unsigned int fragmentShader);
 
