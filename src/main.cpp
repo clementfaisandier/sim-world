@@ -2,6 +2,6 @@
 
 int main(void)
 {
-    // return grid_simulation();
-    return spherical_simulation();
+    return grid_simulation();
+    // return spherical_simulation();
 }

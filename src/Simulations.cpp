@@ -53,18 +53,31 @@ int grid_simulation(void)
 
     // MESHES AND VAOS ---------------------------------------
 
-    GridMeshBuilder mesh_builder = GridMeshBuilder(10, 10, 10);
+    int x = 10;
+    int y = 10;
+    int z = 10;
+
+    GridMeshBuilder mesh_builder = GridMeshBuilder(x, y, z);
 
     GridComputeMesh* grid_compute_mesh = mesh_builder.getComputeMesh();
     GridGraphicsMesh* grid_volume_mesh = mesh_builder.getVolumeMesh();
 
-    GLuint volume_VAO, volume_VBO, volume_IBO;
+    // These ints hold references to the (really names to):
+    //  VAO: Vertex Array Object: A kind of configuration profile.
+    //  VBO: Vertex Buffer Object: Buffer object holding vertices.
+    //  EBO: Element Buffer Object: Buffer object describing our primitive elements.
+    //      Elements and Indices are pretty much the same thing.
+    //      Elements are rendered as part of a primitive.
+    GLuint volume_VAO, volume_VBO, volume_EBO;
 
-    // Create VAO and buffers
+    // Create VAO (the container for reference for our buffers)
     glCreateVertexArrays(1, &volume_VAO);
-    glCreateBuffers(1, &volume_VBO);
-    glCreateBuffers(1, &volume_IBO);
 
+    // Vertex Buffer Object Setup //
+
+    // Create/Register this buffer object.
+    glCreateBuffers(1, &volume_VBO);
+    glCreateBuffers(1, &volume_EBO);
     // Allocate memory to buffers
     glNamedBufferData(
         volume_VBO,
@@ -73,11 +86,142 @@ int grid_simulation(void)
         GL_STATIC_DRAW
     );
     glNamedBufferData(
-        volume_IBO,
+        volume_EBO,
         grid_volume_mesh->index_buffer_size,
         grid_volume_mesh->index_buffer,
         GL_STATIC_DRAW
     );
+
+    // Describe the Data //
+
+    // Structuring our data by defining an attribute.
+    // Enable attribute slot 0
+    glEnableVertexArrayAttrib(volume_VAO, 0);
+    // Define what kind of data attribute 0 should be.
+    //  Attribute Array 0
+    //  is made up of 3 values (x,y,z)
+    //  of type float
+    //  these are not a normalized integer
+    //  each element takes x bytes in memory to store our values
+    glVertexArrayAttribFormat(
+        volume_VAO,
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        3 * sizeof(float)
+    );
+    // Bind a buffer to attribute 0 and that data can be read from the buffer.
+    //  Attribute array 0
+    //  is bound to volume_VBO
+    //  the data starts at byte 0
+    //  and each element starts x bytes appart
+    glVertexArrayVertexBuffer(
+        volume_VAO,
+        0,
+        volume_VBO,
+        0,
+        3 * sizeof(float)
+    );
+    // Bind an Element Buffer Object to the VAO to define primitives.
+    glVertexArrayElementBuffer(
+        volume_VAO,
+        volume_EBO
+    );
+
+    /////////////
+    // Shaders //
+    /////////////
+
+    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, kVertexShader);
+    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, kFragmentShader);
+    unsigned int program = createProgram(vertexShader, fragmentShader);
+    glUseProgram(program);
+
+    // Uniforms //
+
+    // First some custom stuff
+
+    // My custom transformation module object.
+    TransformationModule* TM = &TransformationModule::getInstance();
+
+    // Register the GLFW window with the TransformationModule so it can
+    // receive key callbacks via glfwSetKeyCallback inside setWindow().
+    TM->setWindow(window);
+
+    TM->setRotation(glm::vec3(0.0, 0.0, 0.0));
+    TM->setScale(glm::vec3(0.4, 0.4, 0.4));
+    TM->setCoordinates(glm::vec3(0.0, 0.0, 0.0));
+    float dt = 0.005;
+    float t = 0;
+
+    // OpenGL again:
+    // The value we want to put in a Uniform
+    glm::mat4x4 transformation_matrix = TM->getFinalTransformMatrix();
+    // Here we get the location of (or really a name to) the translation_matrix Uniform object.
+    int transformation_m_uniform = glGetUniformLocation(program, "translation_matrix");
+    glUniformMatrix4fv(
+        program,
+        transformation_m_uniform,
+        1,
+        glm::value_ptr(transformation_matrix)
+    );
+
+    // Color Uniform:
+    int color_uniform = glGetUniformLocation(program, "u_color");
+    glUniform4f(color_uniform, 0.0, 0.0, 0.0, 1.0);
+
+    int object_uniform = glGetUniformLocation(program, "u_object");
+    glUniform1i(object_uniform, 0);
+
+    int dimension_uniform = glGetUniformLocation(program, "u_dimension");
+    glUniform3i(dimension_uniform, x, y, z);
+
+    //////////////////////
+    // Application Loop //
+    //////////////////////
+
+    // Loop until the user closes the window 
+    while (!glfwWindowShouldClose(window))
+    {
+        // Wipe the slate clean if you will
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        // Apply user input.
+        glm::mat4x4 transformation_matrix = TM->getFinalTransformMatrix();
+        glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
+
+        // Send draw commands
+        // Bind our rendering profile
+        glBindVertexArray(volume_VAO);
+        // Render profile using:
+        //  Triangles
+        //  Number of elements to render.
+        //  Data type element is encoded in.
+        //  Byte offset where the first element is found in the EBO.
+        //      The count and offset parameters give us the
+        //      flexibility render only portions of the primitives
+        //      recorded in the EBO, which also means we can
+        //      store multiple objects in one VAO by sectioning
+        //      the VBO and EBO.
+        glDrawElements(
+            GL_TRIANGLES,
+            grid_volume_mesh->index_buffer_length,
+            GL_UNSIGNED_INT,
+            nullptr
+        );
+
+        // Swap front and back buffers (push commands to render)
+        glfwSwapBuffers(window);
+
+        // Poll for and process events
+        glfwPollEvents();
+    }
+
+
+    delete grid_compute_mesh;
+    delete grid_volume_mesh;
 
     glfwTerminate();
     return 0;

@@ -39,22 +39,28 @@ void TransformationModule::setWindow(GLFWwindow* window) {
 void TransformationModule::applyUserInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
     float rotation_speed = 0.1;
     float zoom_speed = 0.1;
-    if (key == GLFW_KEY_UP) {
-        rotate(glm::vec3(0.0, 0.0, rotation_speed));
+    if      (key == GLFW_KEY_W) {
+        rotate(glm::vec3(rotation_speed, 0.0, 0.0));
     }
-    else if (key == GLFW_KEY_DOWN) {
-        rotate(glm::vec3(0.0, 0.0, -rotation_speed));
+    else if (key == GLFW_KEY_S) {
+        rotate(glm::vec3(-rotation_speed, 0.0, 0.0));
     }
-    else if (key == GLFW_KEY_LEFT) {
+    else if (key == GLFW_KEY_A) {
         rotate(glm::vec3(0.0, rotation_speed, 0.0));
     }
-    else if (key == GLFW_KEY_RIGHT) {
+    else if (key == GLFW_KEY_D) {
         rotate(glm::vec3(0.0, -rotation_speed, 0.0));
     }
-    else if (key == GLFW_KEY_PAGE_UP) {
+    else if (key == GLFW_KEY_Q) {
+        rotate(glm::vec3(0.0, 0.0, rotation_speed));
+    }
+    else if (key == GLFW_KEY_E) {
+        rotate(glm::vec3(0.0, 0.0, -rotation_speed));
+    }
+    else if (key == GLFW_KEY_R) {
         scale(glm::vec3(zoom_speed));
     }
-    else if (key == GLFW_KEY_PAGE_DOWN) {
+    else if (key == GLFW_KEY_F) {
         scale(glm::vec3(-zoom_speed));
     }
 }

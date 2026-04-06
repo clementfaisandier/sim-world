@@ -71,7 +71,7 @@ GridComputeMesh* GridMeshBuilder::getComputeMesh()
 */
 GridGraphicsMesh* GridMeshBuilder::getVolumeMesh()
 {
-    const unsigned int k_vertices_per_cube = 36;
+    const unsigned int k_vertices_per_cube = 8;
     const unsigned int k_triangles_per_cube = 12;
 
     GridGraphicsMesh* mesh = new GridGraphicsMesh();

@@ -25,6 +25,12 @@ struct GridGraphicsMesh {
     unsigned int num_x = 0;
     unsigned int num_y = 0;
     unsigned int num_z = 0;
+
+    ~GridGraphicsMesh()
+    {
+        delete[] vertex_buffer;
+        delete[] index_buffer;
+    }
 };
 
 struct GridComputeMesh {

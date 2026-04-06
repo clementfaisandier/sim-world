@@ -42,7 +42,6 @@ public:
         // the global TransformationModule state (instead of a separate static
         // instance local to this function).
         TransformationModule& instance = TransformationModule::getInstance();
-        printf("test\n");
         instance.applyUserInput(window, key, scancode, action, mods);
     }
 
