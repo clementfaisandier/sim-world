@@ -35,17 +35,58 @@ TEST_CASE("GridGraphicsMesh VolumeMesh") {
         CHECK(mesh->vertex_buffer_vertex_count == 8 * 8);
     }
 
-    SUBCASE("First cube vertex bounds") {
+    SUBCASE("First Cube Vertices") {
         // The first cube is at (-1, -1, -1). 
         // With step 2.0 and 2 cells, offset is 1.0.
-        float v0_x = mesh->vertex_buffer[0];
-        float v0_y = mesh->vertex_buffer[1];
-        float v0_z = mesh->vertex_buffer[2];
         // i=0, j=0, k=0 results in center (-1, -1, -1)
         // offset is 1.0. So Vertex 0 is (-2, -2, -2).
-        CHECK(v0_x == doctest::Approx(-2.0f));
-        CHECK(v0_y == doctest::Approx(-2.0f));
-        CHECK(v0_z == doctest::Approx(-2.0f));
+        CHECK(mesh->vertex_buffer[0] == doctest::Approx(-2.0f));
+        CHECK(mesh->vertex_buffer[1] == doctest::Approx(-2.0f));
+        CHECK(mesh->vertex_buffer[2] == doctest::Approx(-2.0f));
+        CHECK(mesh->vertex_buffer[3] == doctest::Approx(0.0f));
+        CHECK(mesh->vertex_buffer[4] == doctest::Approx(-2.0f));
+        CHECK(mesh->vertex_buffer[5] == doctest::Approx(-2.0f));
+        unsigned int vertex_y_index = 3 * 7;
+        CHECK(mesh->vertex_buffer[vertex_y_index + 0] == doctest::Approx(0.0f));
+        CHECK(mesh->vertex_buffer[vertex_y_index + 1] == doctest::Approx(0.0f));
+        CHECK(mesh->vertex_buffer[vertex_y_index + 2] == doctest::Approx(0.0f));
+    }
+
+    SUBCASE("Last cube vertex bounds") {
+        // 3 coordinates * 8 vertices * 7 cubes
+        unsigned int last_cube_index = 3 * 8 * 7;
+        // Last cube should be at (0,0,0) and (2,2,2)
+        //  for first and last vertex
+        CHECK(mesh->vertex_buffer[last_cube_index + 0] == doctest::Approx(0.0f));
+        CHECK(mesh->vertex_buffer[last_cube_index + 1] == doctest::Approx(0.0f));
+        CHECK(mesh->vertex_buffer[last_cube_index + 2] == doctest::Approx(0.0f));
+        unsigned int vertex_y_index = last_cube_index + (3 * 7);
+        CHECK(mesh->vertex_buffer[vertex_y_index + 0] == doctest::Approx(2.0f));
+        CHECK(mesh->vertex_buffer[vertex_y_index + 1] == doctest::Approx(2.0f));
+        CHECK(mesh->vertex_buffer[vertex_y_index + 2] == doctest::Approx(2.0f));
+    }
+
+    SUBCASE("First Cube Indexes") {
+        // back face
+        CHECK(mesh->index_buffer[0] == 0);
+        CHECK(mesh->index_buffer[1] == 1);
+        CHECK(mesh->index_buffer[2] == 2);
+        // top face
+        CHECK(mesh->index_buffer[6] == 7);
+        CHECK(mesh->index_buffer[7] == 6);
+        CHECK(mesh->index_buffer[8] == 2);
+        // right face, 2nd triangle
+        // 2 prior face *  with 2 triangles * with 3 primitives
+        uint index = (2 * 2 * 3) + 3;
+        CHECK(mesh->index_buffer[index + 0] == 7);
+        CHECK(mesh->index_buffer[index + 1] == 1);
+        CHECK(mesh->index_buffer[index + 2] == 5);
+        // front face
+        // 3 prior face *  with 2 triangles * with 3 primitives
+        index = 3 * 2 * 3;
+        CHECK(mesh->index_buffer[index + 0] == 5);
+        CHECK(mesh->index_buffer[index + 1] == 4);
+        CHECK(mesh->index_buffer[index + 2] == 7);
     }
 
     // Clean up

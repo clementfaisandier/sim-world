@@ -3,7 +3,7 @@
 
 /*
     Creating a grid mesh with the specified number of cells.
-    Note that the resulting grid is scaled within [-1, 1] in all three axes.
+    Note that the resulting grid is scaled within [-2, 2] in all three axes.
 */
 GridMeshBuilder::GridMeshBuilder(
         unsigned int num_x,
@@ -93,9 +93,9 @@ GridGraphicsMesh* GridMeshBuilder::getVolumeMesh()
             for (int k = 0; k < num_z; k++) {
                 vertex_buffer = this->generateVolumeVertexAttributes(
                     vertex_buffer,
-                    (i * x_step - 1),
+                    (k * x_step - 1),
                     (j * y_step - 1),
-                    (k * z_step - 1)
+                    (i * z_step - 1)
                 );
             }
         }
@@ -153,9 +153,18 @@ float* GridMeshBuilder::generateVolumeVertexAttributes(
         float y,
         float z
 ) {
+    std::cout << "generateVolumeVertexAttributes" << std::endl;
+    std::cout << buffer << std::endl;
+    std::cout << x << std::endl;
+    std::cout << y << std::endl;
+    std::cout << z << std::endl;
+    
     const float x_offset = x_step / 2;
     const float y_offset = y_step / 2;
     const float z_offset = z_step / 2;
+    std::cout << x_offset << std::endl;
+    std::cout << y_offset << std::endl;
+    std::cout << z_offset << std::endl;
     // Vertex 0
     buffer[0] = x - x_offset;
     buffer[1] = y - y_offset;

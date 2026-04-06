@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glm/vec3.hpp"
+#include <iostream>
 
 #define N_ATTR_P_VERTEX 3
 #define N_VERTEX_P_PRIMITIVE 3

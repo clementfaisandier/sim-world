@@ -53,9 +53,9 @@ int grid_simulation(void)
 
     // MESHES AND VAOS ---------------------------------------
 
-    int x = 10;
-    int y = 10;
-    int z = 10;
+    int x = 2;
+    int y = 2;
+    int z = 2;
 
     GridMeshBuilder mesh_builder = GridMeshBuilder(x, y, z);
 
@@ -161,9 +161,9 @@ int grid_simulation(void)
     // Here we get the location of (or really a name to) the translation_matrix Uniform object.
     int transformation_m_uniform = glGetUniformLocation(program, "translation_matrix");
     glUniformMatrix4fv(
-        program,
         transformation_m_uniform,
         1,
+        0,
         glm::value_ptr(transformation_matrix)
     );
 
@@ -190,7 +190,12 @@ int grid_simulation(void)
 
         // Apply user input.
         glm::mat4x4 transformation_matrix = TM->getFinalTransformMatrix();
-        glUniformMatrix4fv(transformation_m_uniform, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
+        glUniformMatrix4fv(
+            transformation_m_uniform,
+            1,
+            GL_FALSE,
+            glm::value_ptr(transformation_matrix)
+        );
 
         // Send draw commands
         // Bind our rendering profile
