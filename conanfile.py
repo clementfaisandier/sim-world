@@ -15,8 +15,9 @@ class SimWorld(ConanFile):
         self.requires("glm/1.0.1")
 
     def build_requirements(self):
-        self.tool_requires("cmake/[>=4.2]")
-        self.tool_requires("pkgconf/[>=2.5.1]")
+        self.tool_requires("cmake/[^4.2]")
+        self.tool_requires("pkgconf/[^2.5.1]")
+        self.test_requires("doctest/[^2.4.12]")
 
     def layout(self):
         cmake_layout(self)

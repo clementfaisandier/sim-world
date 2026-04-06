@@ -27,8 +27,8 @@ GridComputeMesh* GridMeshBuilder::getComputeMesh()
 {
     GridComputeMesh* mesh = new GridComputeMesh();
     mesh->num_x = num_x;
-    mesh->num_x = num_y;
-    mesh->num_x = num_z;
+    mesh->num_y = num_y;
+    mesh->num_z = num_z;
     mesh->compute_buffer_count = num_x * num_y * num_z;
     mesh->compute_buffer_size = sizeof(GridComputeMesh::Cell) * mesh->compute_buffer_count;
     mesh->compute_buffer = new GridComputeMesh::Cell[mesh->compute_buffer_count];
@@ -72,7 +72,7 @@ GridComputeMesh* GridMeshBuilder::getComputeMesh()
 GridGraphicsMesh* GridMeshBuilder::getVolumeMesh()
 {
     const unsigned int k_vertices_per_cube = 36;
-    const unsigned int k_triangles_per_cube = 36;
+    const unsigned int k_triangles_per_cube = 12;
 
     GridGraphicsMesh* mesh = new GridGraphicsMesh();
     mesh->num_x = num_x;
