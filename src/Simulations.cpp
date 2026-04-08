@@ -1,7 +1,7 @@
 #include "Simulations.h"
 
 
-int grid_simulation(void)
+int grid_simulation(glm::vec3 mesh_dimension)
 {
     /////////////////////
     // Initialize GLFW //
@@ -41,11 +41,15 @@ int grid_simulation(void)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glEnable(GL_DEPTH_TEST);
+    // Turning depth off when rendering transparent objects
+    //  ensures they show up correctly.
+    glDepthMask(GL_FALSE);
 
     glfwSwapInterval(1);
 
     std::cout << glGetString(GL_VERSION) << std::endl;
+    std::cout << glGetString(GL_RENDERER) << std::endl;
+    std::cout << glGetString(GL_VENDOR) << std::endl;
 
     ///////////////////
     // Define Meshes //
@@ -53,12 +57,7 @@ int grid_simulation(void)
 
     // MESHES AND VAOS ---------------------------------------
 
-    int x = 2;
-    int y = 2;
-    int z = 2;
-
-    GridMeshBuilder mesh_builder = GridMeshBuilder(x, y, z);
-
+    GridMeshBuilder mesh_builder = GridMeshBuilder(mesh_dimension);
     GridComputeMesh* grid_compute_mesh = mesh_builder.getComputeMesh();
     GridGraphicsMesh* grid_volume_mesh = mesh_builder.getVolumeMesh();
 
@@ -92,37 +91,34 @@ int grid_simulation(void)
         GL_STATIC_DRAW
     );
 
-    // Describe the Data //
-
-    // Structuring our data by defining an attribute.
-    // Enable attribute slot 0
+    // Describe the Vertex Array //
+    // Enable vertex attribute 0
     glEnableVertexArrayAttrib(volume_VAO, 0);
-    // Define what kind of data attribute 0 should be.
-    //  Attribute Array 0
-    //  is made up of 3 values (x,y,z)
-    //  of type float
-    //  these are not a normalized integer
-    //  each element takes x bytes in memory to store our values
+    // Define vertex attribute 0 in the vertex array
     glVertexArrayAttribFormat(
         volume_VAO,
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        3 * sizeof(float)
+        0,        //  Attribute  0
+        3,        //  is made up of 3 values (x,y,z)
+        GL_FLOAT, //  of type float
+        GL_FALSE, //  these are not a normalized integer
+        0         //  the first element is at byte 0 of the buffer
     );
-    // Bind a buffer to attribute 0 and that data can be read from the buffer.
-    //  Attribute array 0
-    //  is bound to volume_VBO
-    //  the data starts at byte 0
-    //  and each element starts x bytes appart
+    // Associate vertex attribute 0 with the vertex buffer binding point 0
+    glVertexArrayAttribBinding(volume_VAO, 0, 0);
+
+    glEnableVertexArrayAttrib(volume_VAO, 1);
+    glVertexArrayAttribFormat(volume_VAO, 1, 4, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
+    glVertexArrayAttribBinding(volume_VAO, 1, 0);
+
+    // Attach our vertex buffer to the vertex buffer binding point 0
     glVertexArrayVertexBuffer(
         volume_VAO,
-        0,
-        volume_VBO,
-        0,
-        3 * sizeof(float)
+        0,          //  Buffer binding point 0
+        volume_VBO, //  is attached to volume_VBO
+        0,          //  the data starts at byte 0 in the buffer
+        N_ATTR_P_VERTEX_GRID * sizeof(float) //  and each element starts x bytes appart
     );
+
     // Bind an Element Buffer Object to the VAO to define primitives.
     glVertexArrayElementBuffer(
         volume_VAO,
@@ -133,8 +129,8 @@ int grid_simulation(void)
     // Shaders //
     /////////////
 
-    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, kVertexShader);
-    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, kFragmentShader);
+    unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, kMinimalVertexShader);
+    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, kMinimalFragmentShader);
     unsigned int program = createProgram(vertexShader, fragmentShader);
     glUseProgram(program);
 
@@ -152,6 +148,7 @@ int grid_simulation(void)
     TM->setRotation(glm::vec3(0.0, 0.0, 0.0));
     TM->setScale(glm::vec3(0.4, 0.4, 0.4));
     TM->setCoordinates(glm::vec3(0.0, 0.0, 0.0));
+
     float dt = 0.005;
     float t = 0;
 
@@ -166,7 +163,7 @@ int grid_simulation(void)
         0,
         glm::value_ptr(transformation_matrix)
     );
-
+    /*
     // Color Uniform:
     int color_uniform = glGetUniformLocation(program, "u_color");
     glUniform4f(color_uniform, 0.0, 0.0, 0.0, 1.0);
@@ -176,6 +173,7 @@ int grid_simulation(void)
 
     int dimension_uniform = glGetUniformLocation(program, "u_dimension");
     glUniform3i(dimension_uniform, x, y, z);
+    */
 
     //////////////////////
     // Application Loop //

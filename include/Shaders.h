@@ -2,6 +2,14 @@
 
 #include <string>
 
+inline const std::string kMinimalFragmentShader =
+#include "minimal.frag"
+;
+
+inline const std::string kMinimalVertexShader =
+#include "minimal.vert"
+;
+
 inline const std::string kComputeShader =
 #include "compute-shader.comp"
 ;

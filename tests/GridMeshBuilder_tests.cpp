@@ -3,17 +3,17 @@
 #include <glm/glm.hpp>
 
 TEST_CASE("GridComputeMesh") {
-    unsigned int nx = 2, ny = 2, nz = 2;
-    GridMeshBuilder builder(nx, ny, nz);
+    glm::vec3 dimension = glm::vec3(2, 2, 2);
+    GridMeshBuilder builder(dimension);
     auto* mesh = builder.getComputeMesh();
 
     SUBCASE("Buffer allocation and sizing") {
         REQUIRE(mesh != nullptr); 
         CHECK(mesh->compute_buffer_count == 8); // 2*2*2
         // Ensure the bug in your code (assigning all to num_x) is fixed/caught
-        CHECK(mesh->num_x == 2);
-        CHECK(mesh->num_y == 2);
-        CHECK(mesh->num_z == 2);
+        CHECK(mesh->dimension.x == 2);
+        CHECK(mesh->dimension.y == 2);
+        CHECK(mesh->dimension.z == 2);
     }
 
     SUBCASE("Buffer initialization values") {
@@ -27,7 +27,7 @@ TEST_CASE("GridComputeMesh") {
 }
 
 TEST_CASE("GridGraphicsMesh VolumeMesh") {
-    GridMeshBuilder builder(2, 2, 2); // 1.0 step size
+    GridMeshBuilder builder(glm::vec3(2, 2, 2)); // 1.0 step size
     auto* mesh = builder.getVolumeMesh();
 
     SUBCASE("Vertex count math") {

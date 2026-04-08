@@ -15,7 +15,7 @@
 
 #define PI 3.14159265358979323846
 
-int grid_simulation(void);
+int grid_simulation(glm::vec3 mesh_dimension);
 int spherical_simulation(void);
 
 static void glErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);

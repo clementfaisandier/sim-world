@@ -1,43 +1,28 @@
 #include "GridMeshBuilder.h"
 
-
 /*
-    Creating a grid mesh with the specified number of cells.
-    Note that the resulting grid is scaled within [-2, 2] in all three axes.
+    Generates meshes representing a rectangular volume in the cartesian
+    coordinate system broken up in the specified number of cells.
 */
 GridMeshBuilder::GridMeshBuilder(
-        unsigned int num_x,
-        unsigned int num_y,
-        unsigned int num_z
+        glm::vec3 dimension
 ) {
-
-    this->num_x = num_x;
-    this->num_y = num_y;
-    this->num_z = num_z;
-
-    float range = 2.0;
-
-    this->x_step = range / ( num_x - 1);
-    this->y_step = range / ( num_y - 1);
-    this->z_step = range / ( num_z - 1);
+    this->dimension = dimension;
 }
 
 
 GridComputeMesh* GridMeshBuilder::getComputeMesh()
 {
     GridComputeMesh* mesh = new GridComputeMesh();
-    mesh->num_x = num_x;
-    mesh->num_y = num_y;
-    mesh->num_z = num_z;
-    mesh->compute_buffer_count = num_x * num_y * num_z;
+    mesh->dimension = dimension;
+    mesh->compute_buffer_count = dimension.x * dimension.y * dimension.z;
     mesh->compute_buffer_size = sizeof(GridComputeMesh::Cell) * mesh->compute_buffer_count;
     mesh->compute_buffer = new GridComputeMesh::Cell[mesh->compute_buffer_count];
 
     unsigned int cbi = 0;
-
-    for (int i = 0; i < num_x; i++) {
-        for (int j = 0; j < num_y; j++) {
-            for (int k = 0; k < num_z; k++) {
+    for (int i = 0; i < dimension.x; i++) {
+        for (int j = 0; j < dimension.y; j++) {
+            for (int k = 0; k < dimension.z; k++) {
                 mesh->compute_buffer[cbi].velocity = glm::vec3(0.0);
                 mesh->compute_buffer[cbi].pressure = 1.0;
                 mesh->compute_buffer[cbi].density  = 1.0;
@@ -52,13 +37,11 @@ GridComputeMesh* GridMeshBuilder::getComputeMesh()
 
 
 /*
-    Returns a mesh with a cube defined for each cell.
-    Each cube is defined with two triangles to a face.
-    6 faces * 2 triangles * 3 vertices = 36 vertices per cube.
-    6 faces * 2 triangles = 12 triangles per cube.
+    Returns a mesh with a cube defined for each cell. These cubes
+    all fit within a [-0.5,0.5] unit cube.
 
-    Cubes are defined from the (-1, -1, -1) cell first to the
-    (1, 1, 1) cell incrementing first in the x, then the y, then
+    Cubes are defined from the (-1, -1, -1) direction first to the
+    (1, 1, 1) direction incrementing first in the x, then the y, then
     the z axis.
 
     Assumes face culling is clockwise.
@@ -75,46 +58,52 @@ GridGraphicsMesh* GridMeshBuilder::getVolumeMesh()
     const unsigned int k_triangles_per_cube = 12;
 
     GridGraphicsMesh* mesh = new GridGraphicsMesh();
-    mesh->num_x = num_x;
-    mesh->num_y = num_y;
-    mesh->num_z = num_z;
-    mesh->vertex_buffer_vertex_count = num_x * num_y * num_z * k_vertices_per_cube;
-    mesh->index_buffer_triangle_count = num_x * num_y * num_z * k_triangles_per_cube;
-    mesh->vertex_buffer_length = mesh->vertex_buffer_vertex_count * N_ATTR_P_VERTEX;
+    mesh->dimension = dimension;
+    mesh->vertex_buffer_vertex_count = dimension.x * dimension.y * dimension.z * k_vertices_per_cube;
+    mesh->index_buffer_triangle_count = dimension.x * dimension.y * dimension.z * k_triangles_per_cube;
+    mesh->vertex_buffer_length = mesh->vertex_buffer_vertex_count * N_ATTR_P_VERTEX_GRID;
     mesh->index_buffer_length = mesh->index_buffer_triangle_count * N_VERTEX_P_PRIMITIVE;
-    mesh->vertex_buffer_size = mesh->vertex_buffer_length * sizeof(mesh->vertex_buffer);
-    mesh->index_buffer_size = mesh->index_buffer_length * sizeof(mesh->index_buffer);
+    mesh->vertex_buffer_size = mesh->vertex_buffer_length * sizeof(*mesh->vertex_buffer);
+    mesh->index_buffer_size = mesh->index_buffer_length * sizeof(*mesh->index_buffer);
     mesh->vertex_buffer = new float[mesh->vertex_buffer_length];
     mesh->index_buffer = new unsigned int[mesh->index_buffer_length];
 
-    float* vertex_buffer = mesh->vertex_buffer;
-    for (int i = 0; i < num_x; i++) {
-        for (int j = 0; j < num_y; j++) {
-            for (int k = 0; k < num_z; k++) {
-                vertex_buffer = this->generateVolumeVertexAttributes(
-                    vertex_buffer,
-                    (k * x_step - 1),
-                    (j * y_step - 1),
-                    (i * z_step - 1)
+    // Generate Vertex Buffer
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(0, 7);
+    glm::vec3 step = 1.0f / dimension;
+    glm::vec3 location_0 = 0.5f * step - 0.5f;
+    float* dynamic_vertex_buffer = mesh->vertex_buffer;
+    for (uint i = 0; i < dimension.x; i++) {
+        for (uint j = 0; j < dimension.y; j++) {
+            for (uint k = 0; k < dimension.z; k++) {
+                glm::vec3 current_index = glm::uvec3(i, j, k);
+                glm::vec3 current_locaton = location_0 + ( step * current_index );
+                dynamic_vertex_buffer = this->generateVolumeVertexAttributes(
+                    dynamic_vertex_buffer,
+                    current_locaton,
+                    step,
+                    color_pallet[distr(gen)]
                 );
             }
         }
     }
 
+    // Generate Element Buffer
     unsigned int starting_index = 0;
-    unsigned int* index_buffer = mesh->index_buffer;
-    for (int i = 0; i < num_x; i++) {
-        for (int j = 0; j < num_y; j++) {
-            for (int k = 0; k < num_z; k++) {
-                index_buffer = this->generateVolumeIndexAttributes(
-                    index_buffer,
+    unsigned int* dynamic_index_buffer = mesh->index_buffer;
+    for (uint i = 0; i < dimension.x; i++) {
+        for (uint j = 0; j < dimension.y; j++) {
+            for (uint k = 0; k < dimension.z; k++) {
+                dynamic_index_buffer = this->generateVolumeIndexAttributes(
+                    dynamic_index_buffer,
                     starting_index
                 );
                 starting_index += k_vertices_per_cube;
             }
         }
     }
-
     return mesh;
 }
 
@@ -149,63 +138,33 @@ GridGraphicsMesh* GridMeshBuilder::getVolumeMesh()
 */
 float* GridMeshBuilder::generateVolumeVertexAttributes(
         float* buffer,
-        float x,
-        float y,
-        float z
+        glm::vec3 location,
+        glm::vec3 width,
+        glm::vec4 color
 ) {
-    std::cout << "generateVolumeVertexAttributes" << std::endl;
-    std::cout << buffer << std::endl;
-    std::cout << x << std::endl;
-    std::cout << y << std::endl;
-    std::cout << z << std::endl;
-    
-    const float x_offset = x_step / 2;
-    const float y_offset = y_step / 2;
-    const float z_offset = z_step / 2;
-    std::cout << x_offset << std::endl;
-    std::cout << y_offset << std::endl;
-    std::cout << z_offset << std::endl;
-    // Vertex 0
-    buffer[0] = x - x_offset;
-    buffer[1] = y - y_offset;
-    buffer[2] = z - z_offset;
-    buffer += 3;
-    // Vertex 1
-    buffer[0] = x + x_offset;
-    buffer[1] = y - y_offset;
-    buffer[2] = z - z_offset;
-    buffer += 3;
-    // Vertex 2
-    buffer[0] = x - x_offset;
-    buffer[1] = y + y_offset;
-    buffer[2] = z - z_offset;
-    buffer += 3;
-    // Vertex 3
-    buffer[0] = x + x_offset;
-    buffer[1] = y + y_offset;
-    buffer[2] = z - z_offset;
-    buffer += 3;
-    // Vertex 4
-    buffer[0] = x - x_offset;
-    buffer[1] = y - y_offset;
-    buffer[2] = z + z_offset;
-    buffer += 3;
-    // Vertex 5
-    buffer[0] = x + x_offset;
-    buffer[1] = y - y_offset;
-    buffer[2] = z + z_offset;
-    buffer += 3;
-    // Vertex 6
-    buffer[0] = x - x_offset;
-    buffer[1] = y + y_offset;
-    buffer[2] = z + z_offset;
-    buffer += 3;
-    // Vertex 7
-    buffer[0] = x + x_offset;
-    buffer[1] = y + y_offset;
-    buffer[2] = z + z_offset;
-    buffer += 3;
-    return buffer;
+    glm::vec3 offset = width / 2.0f;
+    uint index=0;
+
+    auto writeVertex = [&](glm::vec3 pos) {
+        buffer[index++] = pos.x;
+        buffer[index++] = pos.y;
+        buffer[index++] = pos.z;
+        buffer[index++] = color.r;
+        buffer[index++] = color.g;
+        buffer[index++] = color.b;
+        buffer[index++] = color.a;
+    };
+
+    writeVertex(location + glm::vec3(-offset.x, -offset.y, -offset.z)); // 0
+    writeVertex(location + glm::vec3( offset.x, -offset.y, -offset.z)); // 1
+    writeVertex(location + glm::vec3(-offset.x,  offset.y, -offset.z)); // 2
+    writeVertex(location + glm::vec3( offset.x,  offset.y, -offset.z)); // 3
+    writeVertex(location + glm::vec3(-offset.x, -offset.y,  offset.z)); // 4
+    writeVertex(location + glm::vec3( offset.x, -offset.y,  offset.z)); // 5
+    writeVertex(location + glm::vec3(-offset.x,  offset.y,  offset.z)); // 6
+    writeVertex(location + glm::vec3( offset.x,  offset.y,  offset.z)); // 7
+
+    return &buffer[index];
 }
 
 /*
@@ -342,5 +301,5 @@ unsigned int* GridMeshBuilder::generateVolumeIndexAttributes(
     buffer[i++] = starting_index + 4;
     buffer[i++] = starting_index + 5;
 
-    return buffer + i;
+    return &buffer[i];
 }
