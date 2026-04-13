@@ -1,6 +1,6 @@
 # Dev Log
 
-## 4/12/2026
+## 4/12/2026 First Entry
 
 First dev log entry! Although this project started almost two years ago, I have a few months worth of work into it. So far, the project has focused on OpenGl: understanding the basic rendering pipeline, meshes, basic linear algebra etc. I have also worked on the build system to understand CMake and Conan, which I believe are the best build related tools in C++ development. Nix integration being the last step in that process to encapsulate the system package dependencies not managed by CMake or Conan. 
 
@@ -8,6 +8,8 @@ At this point in the project, I can construct and render basic rectangular and s
 
 For the sake of my sanity, I will start building simulations with my very limited knowledge. These will often not be right. But at least it will be fun to derive from my understanding of physics and math. Then I will be able to compare with the textbooks, and learn the proper math and physics through experimentation and failure.
 
-To start, I will model 2D float using my grid mesh builder. This mesh builder could be improved render-wise using instanced and deffered rendering, but that will be a lesson for another day, for now the un-optimized method will do.
+To start, I will model 2D fluids using my grid mesh builder. This mesh builder could be improved render-wise using instanced and deffered rendering, but that will be a lesson for another day, for now the un-optimized method will do.
 
+There is however, value in implementing visuals that convey the movement of a fluid. This can be done using particles or by adding arrows that point in the direction the fluid is moving, and who's color or lenght represent the speed of the fluid.
 
+I have started documenting these models: [Incompressible Fluids](incompressible-fluid.qmd).

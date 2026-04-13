@@ -7,3 +7,5 @@ CMakeFiles/
 sim-world
 install_manifest.txt
 build
+docs/*_files
+docs/*.html

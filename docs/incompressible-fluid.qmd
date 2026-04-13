@@ -1,0 +1,17 @@
+
+# My first 2D fluid simulation: Incompressible fluid wit constant and uniform density
+
+This will be the first set of circumstances I model as it seems to be the simplest possible situation. Even with these constraints there are some different situations we can focus on to start:
+
+- Water being pushed through a box in a uniform manner: the entire vector field is linear with no vorticity and no friction with the walls.
+- Water being pushed through a box non-uniformly: ie viscosity (internal drag) needs to be taken into account.
+- Same thing but this time with friction on walls.
+- Thermal affecting boyency: but by faking change of volume: boyency not change in density.
+
+### Water being pushed through a box in a uniform manner
+
+Here we start with 
+
++----+
+|    |
++----+
