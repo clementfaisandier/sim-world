@@ -8,10 +8,23 @@ This will be the first set of circumstances I model as it seems to be the simple
 - Same thing but this time with friction on walls.
 - Thermal affecting boyency: but by faking change of volume: boyency not change in density.
 
-### Water being pushed through a box in a uniform manner
+## Moving a fluid
 
-Here we start with 
+The first blocker when conceptualizing fluid flow a set of discrete cells, is how we attribute that flow across the diagonal, onto multiple other cells. My intuition brought me to geometry: given a velocity, how do I calculate how much of a cell lands on its neighbors. It makes sense: one treats the block as a indivisible particle which makes sense as the size of the cell reaches a molecule. It's not complicated math, but then it hit me: you've got to think smaller. Not just small cell, but small change. The basis of all derivatives: limits that approach 0.
 
-+----+
-|    |
-+----+
+Take the cell below, as the magnitude of the translation in the bottom-right direction approaches 0, we get the following:
+
+``` txt
++--------------+                   
+|              |                    +-----------+-+
+|              |                    |           | |
+|      A       |      becomes:      |           | |
+|              |                    |           | |
+|              |                    |           | |
++--------------+                    +-----------+-+
+                                    +-----------+-+
+```
+
+As the magnitude of displacement approaches 0: the diagonal neighbor receives 0 fluid much faster than the neighbors that are in the same axis as our source cell.
+
+Hence we should only care about the neighbors to the side, allowing us to simply how we distribute the pressure for every iteration. We just need to make sure the displacement of the fluid at each step is much smaller than size of a cell. This sounds expensive, but lets start simple and iterate.

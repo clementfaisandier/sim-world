@@ -13,3 +13,19 @@ To start, I will model 2D fluids using my grid mesh builder. This mesh builder c
 There is however, value in implementing visuals that convey the movement of a fluid. This can be done using particles or by adding arrows that point in the direction the fluid is moving, and who's color or lenght represent the speed of the fluid.
 
 I have started documenting these models: [Incompressible Fluids](incompressible-fluid.qmd).
+
+## 4/13/2026
+
+Today I wrote the section **Moving a Fluid**, discussing the mesh representation of a fluid, and why it is acceptable to assume a cell only interacts with it's in-axis neighbors (so no diagonal neighbor interaction).
+
+This was very interesting and satisfying, and of course the next step is to define the interactions between these cells. However, I realized something: because Newton's laws of motion led to Bernoulli's principle, which led to Euleur's equations for fluids which led to the Navier-Stokes equations of fluid dynamics.
+
+This means I should start with Newton's laws. How do kinetic physics of discrete particles lead to fluid mechanics which describe continuums? I have a general understanding of the idea, but I should implement them step by step.
+
+Therefore the plan should be to:
+
+- Create fluid simulation using discrete particles governed by Newtonian physics.
+  - Added bonus: this can quickly be converted to a solar system simulation by adding gravity and lowering the density of particles.
+- Go for Euleur's equations.
+- Then finally Navier-Stokes.
+- Can I make a simulation that seamlessly blends the three (for educational purposes/style points)?
